@@ -18,7 +18,12 @@ export default function Header({ date, dark, onToggleTheme, onEditProfile }) {
   return (
     <header className="flex items-center justify-between">
       <div>
-        <h1 className="text-xl font-bold tracking-tight sm:text-2xl">Calorie Tracker</h1>
+        <h1 className="flex items-center gap-2 text-xl font-semibold tracking-tight sm:text-2xl">
+          <img src="/favicon.svg" alt="" className="h-8 w-8" />
+          <span>
+            calor<span className="font-extrabold text-emerald-500">EAT</span>
+          </span>
+        </h1>
         <p className="text-sm text-slate-500 dark:text-slate-400">
           {new Date(`${date}T00:00:00`).toLocaleDateString(undefined, { weekday: 'long', month: 'long', day: 'numeric' })}
         </p>

@@ -1,5 +1,5 @@
 @echo off
-rem Double-click to run Calorie Tracker. First run installs dependencies.
+rem Double-click to run calorEAT. First run installs dependencies.
 setlocal
 cd /d "%~dp0"
 
@@ -24,6 +24,6 @@ if not exist "node_modules" (
     )
 )
 
-echo Starting Calorie Tracker on http://localhost:5173 ...
+echo Starting calorEAT on http://localhost:5173 ...
 call npm run dev -- --open
 pause
