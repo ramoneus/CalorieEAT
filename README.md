@@ -31,13 +31,17 @@ TDEE = BMR × activity factor
 
 These are estimates, not medical advice.
 
-## Getting started
+## Use it online
+
+Open **https://ramoneus.github.io/CalorEAT/** in any browser. Nothing to install.
+
+## Run it locally
 
 Requires [Node.js](https://nodejs.org/) 20 or newer.
 
 ```bash
-git clone https://github.com/ramoneus/calorie-tracker.git
-cd calorie-tracker
+git clone https://github.com/ramoneus/CalorEAT.git
+cd CalorEAT
 npm install
 npm run dev
 ```

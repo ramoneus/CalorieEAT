@@ -42,12 +42,11 @@ export default function Onboarding({ initial, onSubmit, onCancel }) {
         onSubmit={handleSubmit}
         className="w-full rounded-2xl border border-slate-200 bg-white p-6 shadow-sm sm:p-8 dark:border-slate-800 dark:bg-slate-900/60"
       >
-        <h1 className="text-2xl font-bold tracking-tight">
-          {initial ? 'Update your profile' : 'Welcome 👋'}
+        <h1 className="text-xl font-semibold tracking-tight">
+          {initial ? 'Edit profile' : 'Your details'}
         </h1>
         <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
-          We use the Mifflin-St Jeor equation to estimate the calories you burn each day. That number becomes
-          your daily goal.
+          Used to calculate your daily calorie goal.
         </p>
 
         <div className="mt-6 space-y-5">
@@ -131,7 +130,7 @@ export default function Onboarding({ initial, onSubmit, onCancel }) {
             </div>
           ) : (
             <span className="text-slate-500 dark:text-slate-400">
-              Fill in your details to see your daily calorie goal.
+              Enter your details to see your daily goal.
             </span>
           )}
         </div>

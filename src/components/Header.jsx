@@ -19,7 +19,7 @@ export default function Header({ date, dark, onToggleTheme, onEditProfile }) {
     <header className="flex items-center justify-between">
       <div>
         <h1 className="flex items-center gap-2 text-xl font-semibold tracking-tight sm:text-2xl">
-          <img src="/favicon.svg" alt="" className="h-8 w-8" />
+          <img src={`${import.meta.env.BASE_URL}favicon.svg`} alt="" className="h-8 w-8" />
           <span>
             calor<span className="font-extrabold text-emerald-500">EAT</span>
           </span>
