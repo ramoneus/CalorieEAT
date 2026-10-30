@@ -25,11 +25,11 @@ export default function Header({ date, dark, onToggleTheme, onEditProfile }) {
           </span>
         </h1>
         <p className="text-sm text-slate-500 dark:text-slate-400">
-          {new Date(`${date}T00:00:00`).toLocaleDateString(undefined, { weekday: 'long', month: 'long', day: 'numeric' })}
+          {new Date(`${date}T00:00:00`).toLocaleDateString('el-GR', { weekday: 'long', month: 'long', day: 'numeric' })}
         </p>
       </div>
       <div className="flex gap-1">
-        <button onClick={onEditProfile} className={iconBtn} aria-label="Edit profile" title="Edit profile">
+        <button onClick={onEditProfile} className={iconBtn} aria-label="Επεξεργασία προφίλ" title="Επεξεργασία προφίλ">
           <svg {...iconProps}>
             <circle cx="12" cy="8" r="4" />
             <path d="M4 21a8 8 0 0 1 16 0" />
@@ -38,8 +38,8 @@ export default function Header({ date, dark, onToggleTheme, onEditProfile }) {
         <button
           onClick={onToggleTheme}
           className={iconBtn}
-          aria-label={dark ? 'Switch to light mode' : 'Switch to dark mode'}
-          title={dark ? 'Light mode' : 'Dark mode'}
+          aria-label={dark ? 'Φωτεινό θέμα' : 'Σκοτεινό θέμα'}
+          title={dark ? 'Φωτεινό θέμα' : 'Σκοτεινό θέμα'}
         >
           {dark ? (
             <svg {...iconProps}>

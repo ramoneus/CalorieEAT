@@ -9,7 +9,10 @@ Built with **React (Vite)** and **Tailwind CSS**.
 - **Onboarding / BMR calculator:** enter sex, age, weight, height and activity level. A live preview shows your BMR and TDEE before you save.
 - **Automatic daily goal:** TDEE (BMR × activity factor) is saved and used as your daily calorie target. You can edit your profile at any time and the goal is recalculated.
 - **Dashboard:** a progress bar for calories consumed vs. goal, the calories remaining (or how far over you are), and the day's protein, carbs and fat in grams.
-- **Meal log:** add a meal with its calories and macros, see today's list, and delete any entry.
+- **Food search:** about 140 common Greek foods and dishes with values per 100 g and ready-made portions (slice, cup, medium, etc.) or grams. Search ignores accents and understands Greeklish (`kotopoulo`, `giaourti`).
+- **Meals:** entries are filed under breakfast, lunch, dinner or snack (picked from the time of day, changeable).
+- **Recents and favourites:** re-add something you have eaten before with one tap.
+- **Manual entry:** for anything not in the list, type the calories and macros yourself.
 - **Dark mode:** follows your system preference on first visit, with a manual toggle that is remembered.
 - **Responsive:** works on phones and desktops.
 - **Persistent:** profile, meals and theme live in `localStorage` and survive a refresh.
