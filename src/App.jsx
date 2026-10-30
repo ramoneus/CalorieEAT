@@ -6,8 +6,10 @@ import Header from './components/Header'
 import MealLog from './components/MealLog'
 import Onboarding from './components/Onboarding'
 import Progress from './components/Progress'
+import UserPicker from './components/UserPicker'
 import { useLocalStorage } from './hooks/useLocalStorage'
 import { useTheme } from './hooks/useTheme'
+import { useUsers, userKey } from './hooks/useUsers'
 import { formatDate, todayKey } from './lib/dates'
 import { caloriesByDay, goalFor, withGoal, withWeight } from './lib/history'
 import { itemKey, recentItems, toTemplate } from './lib/meals'
@@ -19,11 +21,20 @@ const VIEWS = [
 ]
 
 export default function App() {
-  const [profile, setProfile] = useLocalStorage('calorie-tracker:profile', null)
-  const [meals, setMeals] = useLocalStorage('calorie-tracker:meals', [])
-  const [favorites, setFavorites] = useLocalStorage('calorie-tracker:favorites', [])
-  const [savedGoals, setGoals] = useLocalStorage('calorie-tracker:goals', [])
-  const [weights, setWeights] = useLocalStorage('calorie-tracker:weights', [])
+  const { users, current, addUser, deleteUser, selectUser, signOut } = useUsers()
+
+  if (!current) return <UserPicker users={users} onSelect={selectUser} onAdd={addUser} onDelete={deleteUser} />
+  // Keyed by user so every switch remounts with that user's own storage.
+  return <Tracker key={current.id} user={current} onSwitchUser={signOut} />
+}
+
+function Tracker({ user, onSwitchUser }) {
+  const key = (name) => userKey(user.id, name)
+  const [profile, setProfile] = useLocalStorage(key('profile'), null)
+  const [meals, setMeals] = useLocalStorage(key('meals'), [])
+  const [favorites, setFavorites] = useLocalStorage(key('favorites'), [])
+  const [savedGoals, setGoals] = useLocalStorage(key('goals'), [])
+  const [weights, setWeights] = useLocalStorage(key('weights'), [])
   const [dark, toggleTheme] = useTheme()
   const [editing, setEditing] = useState(false)
   const [view, setView] = useState('day')
@@ -84,7 +95,13 @@ export default function App() {
 
   return (
     <div className="mx-auto max-w-5xl px-4 py-6 sm:px-6 sm:py-10">
-      <Header dark={dark} onToggleTheme={toggleTheme} onEditProfile={() => setEditing(true)} />
+      <Header
+        userName={user.name}
+        dark={dark}
+        onToggleTheme={toggleTheme}
+        onEditProfile={() => setEditing(true)}
+        onSwitchUser={onSwitchUser}
+      />
 
       <nav className="mt-6 flex flex-wrap items-center justify-between gap-3">
         <div className="flex gap-1 rounded-lg bg-slate-200/70 p-1 dark:bg-slate-800" role="tablist">
