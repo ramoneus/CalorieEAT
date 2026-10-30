@@ -39,15 +39,15 @@ These are estimates, not medical advice.
 
 ## Use it online
 
-Open **https://ramoneus.github.io/CalorEAT/** in any browser. Nothing to install.
+Open **https://ramoneus.github.io/CalorieEAT/** in any browser. Nothing to install.
 
 ## Run it locally
 
 Requires [Node.js](https://nodejs.org/) 20 or newer.
 
 ```bash
-git clone https://github.com/ramoneus/CalorEAT.git
-cd CalorEAT
+git clone https://github.com/ramoneus/CalorieEAT.git
+cd CalorieEAT
 npm install
 npm run dev
 ```
