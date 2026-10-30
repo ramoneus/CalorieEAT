@@ -10,7 +10,7 @@ const iconProps = {
   'aria-hidden': true,
 }
 
-export default function Header({ dark, onToggleTheme, onEditProfile }) {
+export default function Header({ userName, dark, onToggleTheme, onEditProfile, onSwitchUser }) {
   const iconBtn =
     'rounded-lg p-2 text-slate-500 transition hover:bg-slate-200 hover:text-slate-900 ' +
     'dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-100'
@@ -25,7 +25,15 @@ export default function Header({ dark, onToggleTheme, onEditProfile }) {
           </span>
         </h1>
       </div>
-      <div className="flex gap-1">
+      <div className="flex items-center gap-1">
+        <button
+          onClick={onSwitchUser}
+          className="mr-1 max-w-32 truncate rounded-lg px-2 py-1.5 text-sm font-medium text-slate-600 transition hover:bg-slate-200 dark:text-slate-300 dark:hover:bg-slate-800"
+          aria-label={`Αλλαγή χρήστη (τώρα: ${userName})`}
+          title="Αλλαγή χρήστη"
+        >
+          {userName}
+        </button>
         <button onClick={onEditProfile} className={iconBtn} aria-label="Επεξεργασία προφίλ" title="Επεξεργασία προφίλ">
           <svg {...iconProps}>
             <circle cx="12" cy="8" r="4" />
