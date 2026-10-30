@@ -10,7 +10,7 @@ const iconProps = {
   'aria-hidden': true,
 }
 
-export default function Header({ date, dark, onToggleTheme, onEditProfile }) {
+export default function Header({ dark, onToggleTheme, onEditProfile }) {
   const iconBtn =
     'rounded-lg p-2 text-slate-500 transition hover:bg-slate-200 hover:text-slate-900 ' +
     'dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-100'
@@ -24,9 +24,6 @@ export default function Header({ date, dark, onToggleTheme, onEditProfile }) {
             calor<span className="font-extrabold text-emerald-500">EAT</span>
           </span>
         </h1>
-        <p className="text-sm text-slate-500 dark:text-slate-400">
-          {new Date(`${date}T00:00:00`).toLocaleDateString('el-GR', { weekday: 'long', month: 'long', day: 'numeric' })}
-        </p>
       </div>
       <div className="flex gap-1">
         <button onClick={onEditProfile} className={iconBtn} aria-label="Επεξεργασία προφίλ" title="Επεξεργασία προφίλ">

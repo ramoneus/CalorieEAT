@@ -27,11 +27,3 @@ export function sumMacros(meals) {
     { calories: 0, protein: 0, carbs: 0, fat: 0 },
   )
 }
-
-// Local calendar day (not UTC), so "today" rolls over at the user's midnight.
-export function todayKey(date = new Date()) {
-  const y = date.getFullYear()
-  const m = String(date.getMonth() + 1).padStart(2, '0')
-  const d = String(date.getDate()).padStart(2, '0')
-  return `${y}-${m}-${d}`
-}

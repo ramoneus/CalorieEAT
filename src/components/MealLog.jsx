@@ -1,6 +1,6 @@
 import { MEAL_CATEGORIES, amountLabel, categoryOf, fmtNumber } from '../lib/meals'
 
-export default function MealLog({ meals, onDelete }) {
+export default function MealLog({ title, meals, onDelete }) {
   const groups = MEAL_CATEGORIES.map((c) => ({ ...c, meals: meals.filter((m) => categoryOf(m) === c.id) })).filter(
     (g) => g.meals.length > 0,
   )
@@ -8,13 +8,13 @@ export default function MealLog({ meals, onDelete }) {
   return (
     <section
       className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm dark:border-slate-800 dark:bg-slate-900/60"
-      aria-label="Σημερινά γεύματα"
+      aria-label="Γεύματα ημέρας"
     >
-      <h2 className="mb-4 text-lg font-semibold">Σήμερα</h2>
+      <h2 className="mb-4 text-lg font-semibold first-letter:uppercase">{title}</h2>
 
       {groups.length === 0 ? (
         <div className="rounded-xl border border-dashed border-slate-300 px-4 py-10 text-center text-sm text-slate-500 dark:border-slate-700 dark:text-slate-400">
-          Δεν έχεις καταγράψει τίποτα ακόμα.
+          Δεν υπάρχει καταγραφή για αυτή τη μέρα.
         </div>
       ) : (
         <div className="space-y-5">
