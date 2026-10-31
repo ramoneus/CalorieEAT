@@ -8,6 +8,8 @@ export function todayKey(date = new Date()) {
 
 export const dateFromKey = (key) => new Date(`${key}T00:00:00`)
 
+export const daysBetween = (from, to) => Math.round((dateFromKey(to) - dateFromKey(from)) / 86400000)
+
 export function addDays(key, n) {
   const d = dateFromKey(key)
   d.setDate(d.getDate() + n)

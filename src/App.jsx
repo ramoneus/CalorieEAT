@@ -12,9 +12,9 @@ import { useLocalStorage } from './hooks/useLocalStorage'
 import { useTheme } from './hooks/useTheme'
 import { useUsers, userKey } from './hooks/useUsers'
 import { addDays, formatDate, todayKey } from './lib/dates'
-import { caloriesByDay, goalFor, withGoal, withWeight } from './lib/history'
+import { caloriesByDay, entryFor, goalFor, maintenanceFor, modeFor, withGoal, withWeight } from './lib/history'
 import { itemKey, recentItems, toTemplate } from './lib/meals'
-import { sumMacros } from './lib/nutrition'
+import { goalForMode, sumMacros } from './lib/nutrition'
 
 const VIEWS = [
   ['day', 'Day'],
@@ -54,7 +54,10 @@ function Tracker({ user, onSwitchUser }) {
         initial={profile}
         onCancel={profile ? () => setEditing(false) : undefined}
         onSubmit={(p) => {
-          if (goalFor(goals, today) !== p.goal) setGoals(withGoal(goals, today, p.goal))
+          const entry = entryFor(goals, today)
+          if (entry?.goal !== p.goal || modeFor(goals, today) !== p.mode || maintenanceFor(goals, today) !== p.maintenance) {
+            setGoals(withGoal(goals, today, p.goal, { mode: p.mode, maintenance: p.maintenance }))
+          }
           if (p.weight !== profile?.weight) setWeights((w) => withWeight(w, today, p.weight))
           setProfile(p)
           setEditing(false)
@@ -64,6 +67,13 @@ function Tracker({ user, onSwitchUser }) {
   }
 
   const date = selected > today ? today : selected
+  // Profiles saved before modes existed: their goal was plain maintenance.
+  const maintenance = profile.maintenance ?? profile.goal
+  function changeMode(id) {
+    const goal = goalForMode(maintenance, id)
+    setProfile({ ...profile, maintenance, mode: id, goal })
+    setGoals(withGoal(goals, today, goal, { mode: id, maintenance }))
+  }
   const daysMeals = meals.filter((m) => m.date === date).sort((a, b) => a.createdAt - b.createdAt)
   const totals = sumMacros(daysMeals)
   const byDay = caloriesByDay(meals)
@@ -146,7 +156,14 @@ function Tracker({ user, onSwitchUser }) {
       {view === 'day' ? (
         // On phones the add panel sits right under the summary; on desktop it is a sticky sidebar.
         <main className="mt-6 grid gap-6 lg:grid-cols-[1fr_22rem] lg:grid-rows-[auto_1fr] lg:items-start">
-          <Dashboard goal={goalFor(goals, date)} totals={totals} />
+          <Dashboard
+            goal={goalFor(goals, date)}
+            totals={totals}
+            mode={modeFor(goals, date)}
+            maintenance={maintenanceFor(goals, date)}
+            // Only today's plan can be switched; past days keep the mode they were logged under.
+            onSetMode={date === today ? changeMode : undefined}
+          />
           <div className="lg:sticky lg:top-6 lg:col-start-2 lg:row-span-2 lg:row-start-1">
             <AddFood
               recents={recentItems(meals)}

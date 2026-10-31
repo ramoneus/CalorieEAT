@@ -2,11 +2,14 @@ import { useState } from 'react'
 import { useWidth } from '../hooks/useWidth'
 import { formatDate } from '../lib/dates'
 import { fmtNumber } from '../lib/meals'
+import { GOAL_MODES, KCAL_PER_KG, modeById } from '../lib/nutrition'
 
 const HEIGHT = 200
 const PAD = { top: 12, right: 12, bottom: 24, left: 44 }
 
 const fmtKcal = (n) => Math.round(n).toLocaleString('en-GB')
+const fmtSigned = (n) => `${n > 0 ? '+' : n < 0 ? '−' : ''}${fmtKcal(Math.abs(n))}`
+const fmtK = (n) => (n === 0 ? '0' : `${n > 0 ? '+' : '−'}${Math.abs(n) / 1000}k`)
 const shortDate = (date) => formatDate(date, { weekday: 'short', day: 'numeric', month: 'short' })
 
 // Rounded 4px data-end, square at the baseline.
@@ -51,6 +54,27 @@ function Frame({ width, ticks, y, format, days, band, children }) {
         )
       })}
     </>
+  )
+}
+
+// A thin coloured strip above the plot: which mode (cutting / maintaining / bulking) each day was under.
+function ModeStrip({ days, band }) {
+  return days.map((d, i) => (
+    <rect key={d.date} x={PAD.left + i * band} y={2} width={band + 0.5} height={5} fill={modeById(d.mode).color} />
+  ))
+}
+
+function ModeLegend({ children }) {
+  return (
+    <div className="mt-1 flex flex-wrap gap-x-4 gap-y-1 text-xs text-slate-500 dark:text-slate-400">
+      {children}
+      {GOAL_MODES.map((m) => (
+        <span key={m.id} className="flex items-center gap-1.5">
+          <span className="h-1.5 w-3 rounded-sm" style={{ backgroundColor: m.color }} aria-hidden="true" />
+          {m.label}
+        </span>
+      ))}
+    </div>
   )
 }
 
@@ -101,7 +125,7 @@ function TableView({ caption, head, rows }) {
   )
 }
 
-// days: [{ date, kcal (null when nothing was logged), goal }]
+// days: [{ date, kcal (null when nothing was logged), goal, maintenance, mode }]
 export function CaloriesChart({ days, onSelectDay }) {
   const [ref, width] = useWidth()
   const [active, setActive] = useState(null)
@@ -111,13 +135,17 @@ export function CaloriesChart({ days, onSelectDay }) {
   const band = plotW / days.length
   const barW = Math.max(2, Math.min(24, band - 2))
   const step = 1000
-  const max = Math.max(step, Math.ceil((Math.max(...days.map((d) => Math.max(d.kcal ?? 0, d.goal ?? 0))) * 1.05) / step) * step)
+  const max = Math.max(step, Math.ceil((Math.max(...days.map((d) => Math.max(d.kcal ?? 0, d.goal ?? 0, d.maintenance ?? 0))) * 1.05) / step) * step)
   const ticks = Array.from({ length: max / step + 1 }, (_, i) => i * step)
   const y = (v) => PAD.top + plotH - (v / max) * plotH
   const base = y(0)
   const goalPath = days
     .map((d, i) => `${i ? 'L' : 'M'}${PAD.left + i * band} ${y(d.goal)}H${PAD.left + (i + 1) * band}`)
     .join('')
+  const maintenancePath = days
+    .map((d, i) => `${i ? 'L' : 'M'}${PAD.left + i * band} ${y(d.maintenance)}H${PAD.left + (i + 1) * band}`)
+    .join('')
+  const showMaintenance = days.some((d) => d.maintenance !== d.goal)
   const a = active !== null ? days[active] : null
 
   return (
@@ -125,6 +153,7 @@ export function CaloriesChart({ days, onSelectDay }) {
       <div ref={ref} className="relative" onPointerLeave={() => setActive(null)}>
         {width > 0 && (
           <svg width={width} height={HEIGHT} role="img" aria-label="Calories per day compared with the goal">
+            <ModeStrip days={days} band={band} />
             <Frame width={width} ticks={ticks} y={y} format={fmtKcal} days={days} band={band}>
               {days.map((d, i) =>
                 d.kcal ? (
@@ -134,6 +163,9 @@ export function CaloriesChart({ days, onSelectDay }) {
                     className={`fill-[#059669] transition-opacity ${active !== null && active !== i ? 'opacity-50' : ''}`}
                   />
                 ) : null,
+              )}
+              {showMaintenance && (
+                <path d={maintenancePath} fill="none" className="stroke-slate-400 dark:stroke-slate-500" strokeWidth="1.5" strokeDasharray="4 3" strokeLinejoin="round" />
               )}
               <path d={goalPath} fill="none" className="stroke-slate-500 dark:stroke-slate-400" strokeWidth="1.5" strokeLinejoin="round" />
               {days.map((d, i) => (
@@ -166,10 +198,13 @@ export function CaloriesChart({ days, onSelectDay }) {
               Goal {fmtKcal(a.goal)}
               {a.kcal ? ` · ${a.kcal > a.goal ? '+' : '−'}${fmtKcal(Math.abs(a.kcal - a.goal))}` : ''}
             </div>
+            <div className="text-slate-500 dark:text-slate-400">
+              {modeById(a.mode).label} · maintenance {fmtKcal(a.maintenance)}
+            </div>
           </Tooltip>
         )}
       </div>
-      <div className="mt-1 flex gap-4 text-xs text-slate-500 dark:text-slate-400">
+      <ModeLegend>
         <span className="flex items-center gap-1.5">
           <span className="h-2.5 w-2.5 rounded-sm bg-[#059669]" aria-hidden="true" />
           Calories
@@ -178,11 +213,19 @@ export function CaloriesChart({ days, onSelectDay }) {
           <span className="h-0.5 w-3 bg-slate-500 dark:bg-slate-400" aria-hidden="true" />
           Goal
         </span>
-      </div>
+        {showMaintenance && (
+          <span className="flex items-center gap-1.5">
+            <span className="w-3 border-t-2 border-dashed border-slate-400 dark:border-slate-500" aria-hidden="true" />
+            Maintenance
+          </span>
+        )}
+      </ModeLegend>
       <TableView
         caption="Calories per day"
-        head={['Day', 'Calories', 'Goal']}
-        rows={[...days].reverse().map((d) => [d.date, shortDate(d.date), d.kcal ? fmtKcal(d.kcal) : '—', fmtKcal(d.goal)])}
+        head={['Day', 'Calories', 'Goal', 'Maintenance', 'Mode']}
+        rows={[...days]
+          .reverse()
+          .map((d) => [d.date, shortDate(d.date), d.kcal ? fmtKcal(d.kcal) : '—', fmtKcal(d.goal), fmtKcal(d.maintenance), modeById(d.mode).label])}
       />
     </div>
   )
@@ -256,6 +299,82 @@ export function WeightChart({ days, points }) {
         caption="Weight entries"
         head={['Day', 'Weight (kg)']}
         rows={[...points].reverse().map((p) => [p.date, shortDate(p.date), fmtNumber(p.kg)])}
+      />
+    </div>
+  )
+}
+
+const NICE_STEPS = [500, 1000, 2000, 5000, 10000, 20000, 50000, 100000]
+
+// days: [{ date, kcal, balance, mode }]: the running surplus (+) or deficit (−) against maintenance.
+export function BalanceChart({ days, onSelectDay }) {
+  const [ref, width] = useWidth()
+  const [active, setActive] = useState(null)
+
+  const plotW = Math.max(0, width - PAD.left - PAD.right)
+  const plotH = HEIGHT - PAD.top - PAD.bottom
+  const band = plotW / days.length
+  const lo = Math.min(0, ...days.map((d) => d.balance))
+  const hi = Math.max(0, ...days.map((d) => d.balance))
+  const step = NICE_STEPS.find((s) => (hi - lo) / s <= 4) ?? NICE_STEPS.at(-1)
+  const min = Math.floor(lo / step) * step
+  const max = Math.max(Math.ceil(hi / step) * step, min + step)
+  const ticks = Array.from({ length: (max - min) / step + 1 }, (_, i) => min + i * step)
+  const x = (i) => PAD.left + (i + 0.5) * band
+  const y = (v) => PAD.top + plotH - ((v - min) / (max - min)) * plotH
+  const line = days.map((d, i) => `${i ? 'L' : 'M'}${x(i)} ${y(d.balance)}`).join('')
+  const a = active !== null ? days[active] : null
+
+  function onMove(e) {
+    const px = e.clientX - e.currentTarget.getBoundingClientRect().left
+    setActive(Math.min(days.length - 1, Math.max(0, Math.floor((px - PAD.left) / band))))
+  }
+
+  return (
+    <div>
+      <div ref={ref} className="relative" onPointerLeave={() => setActive(null)}>
+        {width > 0 && (
+          <svg width={width} height={HEIGHT} role="img" aria-label="Running calorie surplus or deficit against maintenance" onPointerMove={onMove}>
+            <ModeStrip days={days} band={band} />
+            <Frame width={width} ticks={ticks} y={y} format={fmtK} days={days} band={band}>
+              <line x1={PAD.left} x2={width - PAD.right} y1={y(0)} y2={y(0)} className="stroke-slate-400 dark:stroke-slate-500" strokeWidth="1.5" />
+              {a && <line x1={x(active)} x2={x(active)} y1={PAD.top} y2={PAD.top + plotH} className="stroke-slate-300 dark:stroke-slate-600" strokeWidth="1" />}
+              <path d={line} fill="none" stroke="#059669" strokeWidth="2" strokeLinejoin="round" strokeLinecap="round" />
+              {a && <circle cx={x(active)} cy={y(a.balance)} r="4.5" fill="#059669" strokeWidth="2" className="stroke-white dark:stroke-slate-900" />}
+              {days.length === 1 && <circle cx={x(0)} cy={y(days[0].balance)} r="4" fill="#059669" />}
+              <rect
+                x={PAD.left}
+                y={PAD.top}
+                width={plotW}
+                height={plotH}
+                fill="transparent"
+                className="cursor-pointer"
+                onClick={() => a && onSelectDay(a.date)}
+              />
+            </Frame>
+          </svg>
+        )}
+        {a && (
+          <Tooltip x={x(active)} y={y(a.balance)} width={width}>
+            <div className="text-sm font-semibold">{fmtSigned(a.balance)} kcal</div>
+            <div className="text-slate-500 dark:text-slate-400">{shortDate(a.date)}</div>
+            <div className="text-slate-500 dark:text-slate-400">
+              ≈ {a.balance > 0 ? '+' : a.balance < 0 ? '−' : ''}
+              {fmtNumber(Math.abs(a.balance) / KCAL_PER_KG)} kg · {modeById(a.mode).label}
+            </div>
+          </Tooltip>
+        )}
+      </div>
+      <ModeLegend>
+        <span className="flex items-center gap-1.5">
+          <span className="h-0.5 w-3 bg-[#059669]" aria-hidden="true" />
+          Running balance
+        </span>
+      </ModeLegend>
+      <TableView
+        caption="Running calorie balance"
+        head={['Day', 'Eaten', 'Balance', 'Mode']}
+        rows={[...days].reverse().map((d) => [d.date, shortDate(d.date), d.kcal ? fmtKcal(d.kcal) : '—', fmtSigned(d.balance), modeById(d.mode).label])}
       />
     </div>
   )

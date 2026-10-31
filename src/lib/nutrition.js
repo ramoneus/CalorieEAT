@@ -27,3 +27,17 @@ export function sumMacros(meals) {
     { calories: 0, protein: 0, carbs: 0, fat: 0 },
   )
 }
+
+// Energy in one kilogram of body weight; used for rough "what the numbers add up to" estimates.
+export const KCAL_PER_KG = 7700
+
+// The goal is maintenance (TDEE) shifted by the chosen mode.
+export const GOAL_MODES = [
+  { id: 'cut', label: 'Cutting', hint: 'Lose weight · 500 kcal below maintenance', delta: -500, color: '#0ea5e9' },
+  { id: 'maintain', label: 'Maintaining', hint: 'Keep your weight · eat at maintenance', delta: 0, color: '#10b981' },
+  { id: 'bulk', label: 'Bulking', hint: 'Gain weight · 300 kcal above maintenance', delta: 300, color: '#f59e0b' },
+]
+
+export const modeById = (id) => GOAL_MODES.find((m) => m.id === id) ?? GOAL_MODES[1]
+
+export const goalForMode = (maintenance, modeId) => Math.round(maintenance + modeById(modeId).delta)

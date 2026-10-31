@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import Field, { inputClass } from './Field'
-import { ACTIVITY_LEVELS, calculateBMR, calculateTDEE } from '../lib/nutrition'
+import { ACTIVITY_LEVELS, GOAL_MODES, calculateBMR, calculateTDEE, goalForMode } from '../lib/nutrition'
 
 const RANGES = {
   age: [10, 100],
@@ -15,6 +15,7 @@ export default function Onboarding({ initial, onSubmit, onCancel }) {
     weight: initial?.weight ?? '',
     height: initial?.height ?? '',
     activity: initial?.activity ?? 'light',
+    mode: initial?.mode ?? 'maintain',
   })
 
   const set = (key) => (e) => setForm((f) => ({ ...f, [key]: e.target.value }))
@@ -28,12 +29,13 @@ export default function Onboarding({ initial, onSubmit, onCancel }) {
   }
   const valid = Object.entries(RANGES).every(([k, [min, max]]) => profile[k] >= min && profile[k] <= max)
   const bmr = valid ? calculateBMR(profile) : null
-  const tdee = valid ? calculateTDEE(profile) : null
+  const maintenance = valid ? Math.round(calculateTDEE(profile)) : null
+  const goal = valid ? goalForMode(maintenance, form.mode) : null
 
   function handleSubmit(e) {
     e.preventDefault()
     if (!valid) return
-    onSubmit({ ...profile, bmr: Math.round(bmr), goal: Math.round(tdee) })
+    onSubmit({ ...profile, bmr: Math.round(bmr), maintenance, mode: form.mode, goal })
   }
 
   return (
@@ -115,17 +117,44 @@ export default function Onboarding({ initial, onSubmit, onCancel }) {
               ))}
             </div>
           </fieldset>
+
+          <fieldset>
+            <legend className="mb-1 text-sm font-medium text-slate-700 dark:text-slate-300">Goal</legend>
+            <div className="grid grid-cols-3 gap-2">
+              {GOAL_MODES.map((m) => (
+                <button
+                  key={m.id}
+                  type="button"
+                  onClick={() => setForm((f) => ({ ...f, mode: m.id }))}
+                  aria-pressed={form.mode === m.id}
+                  className={`flex items-center justify-center gap-2 rounded-lg border px-2 py-2 text-sm font-medium transition ${
+                    form.mode === m.id
+                      ? 'border-emerald-500 bg-emerald-50 text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-400'
+                      : 'border-slate-300 text-slate-600 hover:bg-slate-50 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800'
+                  }`}
+                >
+                  <span className="h-2.5 w-2.5 rounded-full" style={{ backgroundColor: m.color }} aria-hidden="true" />
+                  {m.label}
+                </button>
+              ))}
+            </div>
+            <p className="mt-1.5 text-xs text-slate-500 dark:text-slate-400">
+              {GOAL_MODES.find((m) => m.id === form.mode).hint}
+            </p>
+          </fieldset>
         </div>
 
         <div className="mt-6 rounded-xl bg-slate-100 p-4 text-sm dark:bg-slate-800/60" aria-live="polite">
           {valid ? (
             <div className="flex items-center justify-between gap-4">
               <div>
-                <div className="text-slate-500 dark:text-slate-400">BMR {Math.round(bmr)} kcal</div>
+                <div className="text-slate-500 dark:text-slate-400">
+                  BMR {Math.round(bmr)} kcal · maintenance {maintenance.toLocaleString('en-GB')} kcal
+                </div>
                 <div className="font-semibold">Daily goal</div>
               </div>
               <div className="text-2xl font-bold text-emerald-600 dark:text-emerald-400">
-                {Math.round(tdee).toLocaleString('en-GB')} <span className="text-sm font-medium">kcal</span>
+                {goal.toLocaleString('en-GB')} <span className="text-sm font-medium">kcal</span>
               </div>
             </div>
           ) : (
