@@ -1,3 +1,5 @@
+import { useInstallPrompt } from '../hooks/useInstallPrompt'
+
 const iconProps = {
   width: 20,
   height: 20,
@@ -11,6 +13,7 @@ const iconProps = {
 }
 
 export default function Header({ userName, dark, onToggleTheme, onEditProfile, onSwitchUser }) {
+  const install = useInstallPrompt()
   const iconBtn =
     'rounded-lg p-2 text-slate-500 transition hover:bg-slate-200 hover:text-slate-900 ' +
     'dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-100'
@@ -26,6 +29,18 @@ export default function Header({ userName, dark, onToggleTheme, onEditProfile, o
         </h1>
       </div>
       <div className="flex items-center gap-1">
+        {install && (
+          <button
+            onClick={install}
+            className="mr-1 flex items-center gap-1.5 rounded-lg bg-emerald-600 px-2.5 py-1.5 text-sm font-semibold text-white transition hover:bg-emerald-500"
+            title="Install calorEAT as an app"
+          >
+            <svg {...iconProps} width={16} height={16}>
+              <path d="M12 3v12M7 10l5 5 5-5M5 21h14" />
+            </svg>
+            Install
+          </button>
+        )}
         <button
           onClick={onSwitchUser}
           className="mr-1 max-w-32 truncate rounded-lg px-2 py-1.5 text-sm font-medium text-slate-600 transition hover:bg-slate-200 dark:text-slate-300 dark:hover:bg-slate-800"

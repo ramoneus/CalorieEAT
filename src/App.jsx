@@ -234,7 +234,7 @@ function UndoToast({ name, onUndo, onDismiss }) {
   return (
     <div
       role="status"
-      className="fixed inset-x-4 bottom-4 z-30 mx-auto flex max-w-md items-center gap-3 rounded-xl bg-slate-900 px-4 py-3 text-sm text-white shadow-lg dark:bg-white dark:text-slate-900"
+      className="fixed inset-x-4 bottom-[max(1rem,env(safe-area-inset-bottom))] z-30 mx-auto flex max-w-md items-center gap-3 rounded-xl bg-slate-900 px-4 py-3 text-sm text-white shadow-lg dark:bg-white dark:text-slate-900"
     >
       <span className="min-w-0 flex-1 truncate">Deleted: {name}</span>
       <button type="button" onClick={onUndo} className="font-semibold text-emerald-400 hover:underline dark:text-emerald-700">

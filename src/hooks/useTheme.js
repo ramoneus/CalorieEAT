@@ -7,6 +7,8 @@ export function useTheme() {
 
   useEffect(() => {
     document.documentElement.classList.toggle('dark', dark)
+    // Colours the phone's status bar to match when installed as an app.
+    document.querySelector('meta[name=theme-color]')?.setAttribute('content', dark ? '#020617' : '#f8fafc')
     try {
       localStorage.setItem(KEY, dark ? 'dark' : 'light')
     } catch {

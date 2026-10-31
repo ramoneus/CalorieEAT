@@ -19,6 +19,7 @@ Built with **React (Vite)** and **Tailwind CSS**.
 - **Backup:** download all your data as a file and restore it on any device.
 - **Dark mode:** follows your system preference on first visit, with a manual toggle that is remembered.
 - **Responsive:** works on phones and desktops.
+- **Installable and offline:** add it to your home screen like a normal app; after the first visit it opens without an internet connection.
 - **Persistent:** profile, meals and theme live in `localStorage` and survive a refresh.
 
 ## How the goal is calculated
@@ -41,6 +42,11 @@ These are estimates, not medical advice.
 ## Use it online
 
 Open **https://ramoneus.github.io/CalorieEAT/** in any browser. Nothing to install.
+
+To add it to your home screen as an app:
+
+- **Android / Chrome / Edge:** tap the **Install** button in the app header, or *Install app* in the browser menu.
+- **iPhone / iPad (Safari):** tap **Share** → **Add to Home Screen**.
 
 ## Run it locally
 

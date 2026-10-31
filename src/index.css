@@ -11,6 +11,8 @@
 
 body {
   @apply bg-slate-50 text-slate-900 antialiased dark:bg-slate-950 dark:text-slate-100;
+  /* Keep content clear of the notch and home indicator when installed as an app. */
+  padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
 }
 
 /* Hide number input spinners; they are fiddly on mobile and noisy on desktop. */
