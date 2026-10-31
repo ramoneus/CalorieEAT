@@ -1,12 +1,22 @@
 import { useEffect, useMemo, useState } from 'react'
+import CategoryPicker from './CategoryPicker'
 import FoodDetail from './FoodDetail'
 import { inputClass } from './Field'
 import MealForm from './MealForm'
 import QuickList from './QuickList'
 import { searchFoods } from '../lib/foods'
-import { MEAL_CATEGORIES, defaultCategory, itemKey } from '../lib/meals'
+import { MEAL_CATEGORIES, categoryOf, defaultCategory, itemKey, toTemplate } from '../lib/meals'
 
-export default function AddFood({ recents, favorites, onAdd, onToggleFavorite }) {
+export default function AddFood({
+  recents,
+  favorites,
+  dayMeals,
+  previousMeals,
+  previousLabel,
+  onAdd,
+  onAddMany,
+  onToggleFavorite,
+}) {
   const [category, setCategory] = useState(defaultCategory)
   const [query, setQuery] = useState('')
   // 'search' | { food } | { manual: true }
@@ -30,6 +40,17 @@ export default function AddFood({ recents, favorites, onAdd, onToggleFavorite })
     setQuery('')
   }
 
+  // Offer to repeat the previous day's meal only while this day's slot is still empty.
+  const categoryLabel = MEAL_CATEGORIES.find((c) => c.id === category).label
+  const toCopy = dayMeals.some((m) => categoryOf(m) === category)
+    ? []
+    : previousMeals.filter((m) => categoryOf(m) === category)
+
+  function copyPrevious() {
+    onAddMany(toCopy.map((m) => ({ ...toTemplate(m), category })))
+    setNotice(`Προστέθηκαν ${toCopy.length} ${toCopy.length === 1 ? 'φαγητό' : 'φαγητά'}`)
+  }
+
   const openFood = (food) => setView({ food })
   const linkBtn =
     'text-sm font-medium text-emerald-700 underline-offset-2 hover:underline dark:text-emerald-400'
@@ -41,23 +62,8 @@ export default function AddFood({ recents, favorites, onAdd, onToggleFavorite })
     >
       <h2 className="mb-3 text-lg font-semibold">Προσθήκη φαγητού</h2>
 
-      <div className="mb-4 flex gap-1 rounded-lg bg-slate-100 p-1 dark:bg-slate-800" role="radiogroup" aria-label="Γεύμα">
-        {MEAL_CATEGORIES.map((c) => (
-          <button
-            key={c.id}
-            type="button"
-            role="radio"
-            aria-checked={category === c.id}
-            onClick={() => setCategory(c.id)}
-            className={`flex-auto rounded-md px-1.5 py-1.5 text-xs font-medium transition sm:text-sm ${
-              category === c.id
-                ? 'bg-white text-emerald-700 shadow-sm dark:bg-slate-950 dark:text-emerald-400'
-                : 'text-slate-600 hover:text-slate-900 dark:text-slate-300 dark:hover:text-white'
-            }`}
-          >
-            {c.label}
-          </button>
-        ))}
+      <div className="mb-4">
+        <CategoryPicker value={category} onChange={setCategory} />
       </div>
 
       {view.food ? (
@@ -71,7 +77,7 @@ export default function AddFood({ recents, favorites, onAdd, onToggleFavorite })
           onBack={() => setView('search')}
         />
       ) : view.manual ? (
-        <MealForm initialName={query} onAdd={add} onBack={() => setView('search')} />
+        <MealForm initial={{ name: query }} onAdd={add} onBack={() => setView('search')} />
       ) : (
         <>
           <input
@@ -120,6 +126,31 @@ export default function AddFood({ recents, favorites, onAdd, onToggleFavorite })
               )
             ) : (
               <div className="space-y-4">
+                {toCopy.length > 0 && (
+                  <button
+                    type="button"
+                    onClick={copyPrevious}
+                    className="flex w-full items-center gap-3 rounded-lg border border-dashed border-emerald-300 px-3 py-2.5 text-left transition hover:bg-emerald-50 dark:border-emerald-800 dark:hover:bg-emerald-500/10"
+                  >
+                    <span className="min-w-0 flex-1">
+                      <span className="block text-sm font-medium">
+                        Ίδιο {categoryLabel.toLowerCase()} με {previousLabel}
+                      </span>
+                      <span className="block truncate text-xs text-slate-500 dark:text-slate-400">
+                        {toCopy.map((m) => m.name).join(', ')}
+                      </span>
+                    </span>
+                    <span className="text-sm font-semibold whitespace-nowrap">
+                      {Math.round(toCopy.reduce((s, m) => s + m.calories, 0))}{' '}
+                      <span className="text-xs font-normal text-slate-400">kcal</span>
+                    </span>
+                    <span className="text-emerald-600 dark:text-emerald-400" aria-hidden="true">
+                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
+                        <path d="M12 5v14M5 12h14" />
+                      </svg>
+                    </span>
+                  </button>
+                )}
                 <QuickList
                   title="Αγαπημένα"
                   items={favorites}

@@ -1,6 +1,7 @@
-import { useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import AddFood from './components/AddFood'
 import Dashboard from './components/Dashboard'
+import EditMeal from './components/EditMeal'
 import DateNav from './components/DateNav'
 import Header from './components/Header'
 import MealLog from './components/MealLog'
@@ -10,7 +11,7 @@ import UserPicker from './components/UserPicker'
 import { useLocalStorage } from './hooks/useLocalStorage'
 import { useTheme } from './hooks/useTheme'
 import { useUsers, userKey } from './hooks/useUsers'
-import { formatDate, todayKey } from './lib/dates'
+import { addDays, formatDate, todayKey } from './lib/dates'
 import { caloriesByDay, goalFor, withGoal, withWeight } from './lib/history'
 import { itemKey, recentItems, toTemplate } from './lib/meals'
 import { sumMacros } from './lib/nutrition'
@@ -39,6 +40,9 @@ function Tracker({ user, onSwitchUser }) {
   const [editing, setEditing] = useState(false)
   const [view, setView] = useState('day')
   const [selected, setSelected] = useState(todayKey)
+  const [editingMeal, setEditingMeal] = useState(null)
+  const [deleted, setDeleted] = useState(null)
+  const dismissDeleted = useCallback(() => setDeleted(null), [])
 
   const today = todayKey()
   // Profiles saved before goal history existed: their goal applies to every past day.
@@ -64,9 +68,23 @@ function Tracker({ user, onSwitchUser }) {
   const totals = sumMacros(daysMeals)
   const byDay = caloriesByDay(meals)
 
-  const addMeal = (meal) =>
-    setMeals((all) => [...all, { ...meal, id: crypto.randomUUID(), date, createdAt: Date.now() }])
-  const deleteMeal = (id) => setMeals((all) => all.filter((m) => m.id !== id))
+  const prevMeals = meals.filter((m) => m.date === addDays(date, -1)).sort((a, b) => a.createdAt - b.createdAt)
+
+  const addMeals = (items) =>
+    setMeals((all) => [
+      ...all,
+      ...items.map((item, i) => ({ ...item, id: crypto.randomUUID(), date, createdAt: Date.now() + i })),
+    ])
+  const addMeal = (meal) => addMeals([meal])
+  const updateMeal = (id, changes) => setMeals((all) => all.map((m) => (m.id === id ? { ...m, ...changes } : m)))
+  function deleteMeal(id) {
+    setDeleted(meals.find((m) => m.id === id))
+    setMeals((all) => all.filter((m) => m.id !== id))
+  }
+  function undoDelete() {
+    setMeals((all) => [...all, deleted])
+    setDeleted(null)
+  }
   const toggleFavorite = (item) =>
     setFavorites((all) =>
       all.some((f) => itemKey(f) === itemKey(item))
@@ -133,7 +151,11 @@ function Tracker({ user, onSwitchUser }) {
             <AddFood
               recents={recentItems(meals)}
               favorites={favorites}
+              dayMeals={daysMeals}
+              previousMeals={prevMeals}
+              previousLabel={date === today ? 'χθες' : 'την προηγούμενη μέρα'}
               onAdd={addMeal}
+              onAddMany={addMeals}
               onToggleFavorite={toggleFavorite}
             />
           </div>
@@ -141,9 +163,26 @@ function Tracker({ user, onSwitchUser }) {
             <MealLog
               title={date === today ? 'Σήμερα' : formatDate(date, { weekday: 'long', day: 'numeric', month: 'long' })}
               meals={daysMeals}
+              onEdit={(meal) => setEditingMeal(meal)}
               onDelete={deleteMeal}
             />
           </div>
+          {editingMeal && (
+            <EditMeal
+              meal={editingMeal}
+              isFavorite={(item) => favorites.some((f) => itemKey(f) === itemKey(item))}
+              onToggleFavorite={toggleFavorite}
+              onSave={(changes) => {
+                updateMeal(editingMeal.id, changes)
+                setEditingMeal(null)
+              }}
+              onDelete={() => {
+                deleteMeal(editingMeal.id)
+                setEditingMeal(null)
+              }}
+              onClose={() => setEditingMeal(null)}
+            />
+          )}
         </main>
       ) : (
         <main className="mt-6">
@@ -162,6 +201,28 @@ function Tracker({ user, onSwitchUser }) {
           />
         </main>
       )}
+
+      {deleted && <UndoToast key={deleted.id} name={deleted.name} onUndo={undoDelete} onDismiss={dismissDeleted} />}
+    </div>
+  )
+}
+
+// "Deleted · Undo" bar shown for a few seconds after removing an entry.
+function UndoToast({ name, onUndo, onDismiss }) {
+  useEffect(() => {
+    const t = setTimeout(onDismiss, 6000)
+    return () => clearTimeout(t)
+  }, [onDismiss])
+
+  return (
+    <div
+      role="status"
+      className="fixed inset-x-4 bottom-4 z-30 mx-auto flex max-w-md items-center gap-3 rounded-xl bg-slate-900 px-4 py-3 text-sm text-white shadow-lg dark:bg-white dark:text-slate-900"
+    >
+      <span className="min-w-0 flex-1 truncate">Διαγράφηκε: {name}</span>
+      <button type="button" onClick={onUndo} className="font-semibold text-emerald-400 hover:underline dark:text-emerald-700">
+        Αναίρεση
+      </button>
     </div>
   )
 }

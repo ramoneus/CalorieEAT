@@ -1,11 +1,11 @@
 import { useState } from 'react'
-import Field, { inputClass } from './Field'
+import Field, { BackButton, inputClass } from './Field'
 
-const EMPTY = { name: '', calories: '', protein: '', carbs: '', fat: '' }
+const FIELDS = ['name', 'calories', 'protein', 'carbs', 'fat']
 
-// Manual entry, for anything the food list doesn't have.
-export default function MealForm({ initialName = '', onAdd, onBack }) {
-  const [form, setForm] = useState({ ...EMPTY, name: initialName })
+// Manual entry, for anything the food list doesn't have. Also edits manual entries.
+export default function MealForm({ initial = {}, onAdd, onBack, submitLabel = 'Προσθήκη' }) {
+  const [form, setForm] = useState(() => Object.fromEntries(FIELDS.map((k) => [k, String(initial[k] ?? '')])))
   const set = (key) => (e) => setForm((f) => ({ ...f, [key]: e.target.value }))
 
   function handleSubmit(e) {
@@ -25,17 +25,8 @@ export default function MealForm({ initialName = '', onAdd, onBack }) {
 
   return (
     <form onSubmit={handleSubmit}>
-      <button
-        type="button"
-        onClick={onBack}
-        className="-ml-2 mb-2 flex items-center gap-1 rounded-lg px-2 py-1 text-sm text-slate-500 transition hover:bg-slate-100 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-100"
-      >
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-          <path d="M15 18l-6-6 6-6" />
-        </svg>
-        Πίσω
-      </button>
-      <h3 className="mb-3 font-semibold">Χειροκίνητη καταχώριση</h3>
+      {onBack && <BackButton onClick={onBack} />}
+      {onBack && <h3 className="mb-3 font-semibold">Χειροκίνητη καταχώριση</h3>}
       <div className="space-y-3">
         <Field label="Φαγητό">
           <input type="text" className={inputClass} value={form.name} onChange={set('name')} placeholder="π.χ. Κοτόπουλο με ρύζι" required maxLength={80} />
@@ -59,7 +50,7 @@ export default function MealForm({ initialName = '', onAdd, onBack }) {
         type="submit"
         className="mt-5 w-full rounded-lg bg-emerald-600 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-emerald-500"
       >
-        Προσθήκη
+        {submitLabel}
       </button>
     </form>
   )

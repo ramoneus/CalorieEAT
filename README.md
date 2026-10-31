@@ -11,7 +11,8 @@ Built with **React (Vite)** and **Tailwind CSS**.
 - **Dashboard:** a progress bar for calories consumed vs. goal, the calories remaining (or how far over you are), and the day's protein, carbs and fat in grams.
 - **Food search:** about 140 common Greek foods and dishes with values per 100 g and ready-made portions (slice, cup, medium, etc.) or grams. Search ignores accents and understands Greeklish (`kotopoulo`, `giaourti`).
 - **Meals:** entries are filed under breakfast, lunch, dinner or snack (picked from the time of day, changeable).
-- **Recents and favourites:** re-add something you have eaten before with one tap.
+- **Recents and favourites:** re-add something you have eaten before with one tap, or repeat a whole meal from the day before ("Same breakfast as yesterday").
+- **Edit and undo:** tap an entry to change its amount or meal; a deleted entry can be restored for a few seconds.
 - **Manual entry:** for anything not in the list, type the calories and macros yourself.
 - **History:** move between days or pick one from a calendar (days are marked within or over goal) and log meals you forgot on past days.
 - **Progress:** calories per day against the goal and weight over the last 7, 30 or 90 days, with daily averages. Changing your profile only affects the goal from that day on.

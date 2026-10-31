@@ -1,15 +1,17 @@
 import { useState } from 'react'
-import Field, { inputClass } from './Field'
+import Field, { BackButton, inputClass } from './Field'
 import { StarButton } from './QuickList'
 import { nutrientsFor } from '../lib/foods'
 import { fmtNumber } from '../lib/meals'
 
 const GRAMS = 'g'
 
-export default function FoodDetail({ food, initial, isFavorite, onToggleFavorite, onAdd, onBack }) {
-  const [unit, setUnit] = useState(initial ? (initial.portion ?? GRAMS) : (food.portions[0]?.label ?? GRAMS))
+export default function FoodDetail({ food, initial, isFavorite, onToggleFavorite, onAdd, onBack, submitLabel = 'Προσθήκη' }) {
+  // A saved portion that no longer exists in the food list falls back to grams.
+  const initialPortion = initial?.portion && food.portions.some((p) => p.label === initial.portion) ? initial.portion : null
+  const [unit, setUnit] = useState(initial ? (initialPortion ?? GRAMS) : (food.portions[0]?.label ?? GRAMS))
   const [amount, setAmount] = useState(
-    String(initial ? (initial.portion ? initial.qty : initial.grams) : food.portions.length ? 1 : 100),
+    String(initial ? (initialPortion ? initial.qty : initial.grams) : food.portions.length ? 1 : 100),
   )
 
   const portion = food.portions.find((p) => p.label === unit)
@@ -39,16 +41,7 @@ export default function FoodDetail({ food, initial, isFavorite, onToggleFavorite
 
   return (
     <form onSubmit={handleSubmit}>
-      <button
-        type="button"
-        onClick={onBack}
-        className="-ml-2 mb-2 flex items-center gap-1 rounded-lg px-2 py-1 text-sm text-slate-500 transition hover:bg-slate-100 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-100"
-      >
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-          <path d="M15 18l-6-6 6-6" />
-        </svg>
-        Πίσω
-      </button>
+      {onBack && <BackButton onClick={onBack} />}
 
       <div className="flex items-start justify-between gap-2">
         <div>
@@ -104,7 +97,7 @@ export default function FoodDetail({ food, initial, isFavorite, onToggleFavorite
         disabled={!valid}
         className="mt-4 w-full rounded-lg bg-emerald-600 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-emerald-500 disabled:cursor-not-allowed disabled:opacity-40"
       >
-        Προσθήκη
+        {submitLabel}
       </button>
     </form>
   )

@@ -1,6 +1,6 @@
 import { MEAL_CATEGORIES, amountLabel, categoryOf, fmtNumber } from '../lib/meals'
 
-export default function MealLog({ title, meals, onDelete }) {
+export default function MealLog({ title, meals, onEdit, onDelete }) {
   const groups = MEAL_CATEGORIES.map((c) => ({ ...c, meals: meals.filter((m) => categoryOf(m) === c.id) })).filter(
     (g) => g.meals.length > 0,
   )
@@ -28,19 +28,26 @@ export default function MealLog({ title, meals, onDelete }) {
               </h3>
               <ul className="divide-y divide-slate-200 dark:divide-slate-800">
                 {group.meals.map((meal) => (
-                  <li key={meal.id} className="flex items-center gap-3 py-3">
-                    <div className="min-w-0 flex-1">
-                      <div className="truncate font-medium">{meal.name}</div>
-                      <div className="mt-0.5 flex flex-wrap gap-x-3 text-xs text-slate-500 dark:text-slate-400">
-                        {amountLabel(meal) && <span>{amountLabel(meal)}</span>}
-                        <span className="text-protein">Π {fmtNumber(meal.protein)}g</span>
-                        <span className="text-carbs">Υ {fmtNumber(meal.carbs)}g</span>
-                        <span className="text-fat">Λ {fmtNumber(meal.fat)}g</span>
-                      </div>
-                    </div>
-                    <div className="text-right font-semibold">
-                      {Math.round(meal.calories)} <span className="text-xs font-normal text-slate-400">kcal</span>
-                    </div>
+                  <li key={meal.id} className="flex items-center gap-1 py-1.5">
+                    <button
+                      type="button"
+                      onClick={() => onEdit(meal)}
+                      aria-label={`Επεξεργασία ${meal.name}, ${Math.round(meal.calories)} θερμίδες`}
+                      className="-ml-2 flex min-w-0 flex-1 items-center gap-3 rounded-lg px-2 py-1.5 text-left transition hover:bg-slate-100 dark:hover:bg-slate-800"
+                    >
+                      <span className="min-w-0 flex-1">
+                        <span className="block truncate font-medium">{meal.name}</span>
+                        <span className="mt-0.5 flex flex-wrap gap-x-3 text-xs text-slate-500 dark:text-slate-400">
+                          {amountLabel(meal) && <span>{amountLabel(meal)}</span>}
+                          <span className="text-protein">Π {fmtNumber(meal.protein)}g</span>
+                          <span className="text-carbs">Υ {fmtNumber(meal.carbs)}g</span>
+                          <span className="text-fat">Λ {fmtNumber(meal.fat)}g</span>
+                        </span>
+                      </span>
+                      <span className="text-right font-semibold whitespace-nowrap">
+                        {Math.round(meal.calories)} <span className="text-xs font-normal text-slate-400">kcal</span>
+                      </span>
+                    </button>
                     <button
                       onClick={() => onDelete(meal.id)}
                       className="rounded-lg p-2 text-slate-400 transition hover:bg-rose-50 hover:text-rose-500 dark:hover:bg-rose-500/10"
