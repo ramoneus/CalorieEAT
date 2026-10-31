@@ -2,7 +2,7 @@ import { MEAL_CATEGORIES } from '../lib/meals'
 
 export default function CategoryPicker({ value, onChange }) {
   return (
-    <div className="flex gap-1 rounded-lg bg-slate-100 p-1 dark:bg-slate-800" role="radiogroup" aria-label="Γεύμα">
+    <div className="flex gap-1 rounded-lg bg-slate-100 p-1 dark:bg-slate-800" role="radiogroup" aria-label="Meal">
       {MEAL_CATEGORIES.map((c) => (
         <button
           key={c.id}

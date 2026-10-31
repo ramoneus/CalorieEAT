@@ -17,8 +17,8 @@ import { itemKey, recentItems, toTemplate } from './lib/meals'
 import { sumMacros } from './lib/nutrition'
 
 const VIEWS = [
-  ['day', 'Ημέρα'],
-  ['progress', 'Πρόοδος'],
+  ['day', 'Day'],
+  ['progress', 'Progress'],
 ]
 
 export default function App() {
@@ -153,7 +153,7 @@ function Tracker({ user, onSwitchUser }) {
               favorites={favorites}
               dayMeals={daysMeals}
               previousMeals={prevMeals}
-              previousLabel={date === today ? 'χθες' : 'την προηγούμενη μέρα'}
+              previousLabel={date === today ? 'yesterday' : 'the previous day'}
               onAdd={addMeal}
               onAddMany={addMeals}
               onToggleFavorite={toggleFavorite}
@@ -161,7 +161,7 @@ function Tracker({ user, onSwitchUser }) {
           </div>
           <div className="lg:col-start-1 lg:row-start-2">
             <MealLog
-              title={date === today ? 'Σήμερα' : formatDate(date, { weekday: 'long', day: 'numeric', month: 'long' })}
+              title={date === today ? 'Today' : formatDate(date, { weekday: 'long', day: 'numeric', month: 'long' })}
               meals={daysMeals}
               onEdit={(meal) => setEditingMeal(meal)}
               onDelete={deleteMeal}
@@ -219,9 +219,9 @@ function UndoToast({ name, onUndo, onDismiss }) {
       role="status"
       className="fixed inset-x-4 bottom-4 z-30 mx-auto flex max-w-md items-center gap-3 rounded-xl bg-slate-900 px-4 py-3 text-sm text-white shadow-lg dark:bg-white dark:text-slate-900"
     >
-      <span className="min-w-0 flex-1 truncate">Διαγράφηκε: {name}</span>
+      <span className="min-w-0 flex-1 truncate">Deleted: {name}</span>
       <button type="button" onClick={onUndo} className="font-semibold text-emerald-400 hover:underline dark:text-emerald-700">
-        Αναίρεση
+        Undo
       </button>
     </div>
   )

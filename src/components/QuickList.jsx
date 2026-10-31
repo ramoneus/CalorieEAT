@@ -6,8 +6,8 @@ export function StarButton({ active, onClick, name }) {
       type="button"
       onClick={onClick}
       aria-pressed={active}
-      aria-label={active ? `Αφαίρεση ${name} από τα αγαπημένα` : `Προσθήκη ${name} στα αγαπημένα`}
-      title={active ? 'Αφαίρεση από τα αγαπημένα' : 'Προσθήκη στα αγαπημένα'}
+      aria-label={active ? `Remove ${name} from favorites` : `Add ${name} to favorites`}
+      title={active ? 'Remove from favorites' : 'Add to favorites'}
       className={`rounded-lg p-2 transition hover:bg-slate-100 dark:hover:bg-slate-800 ${
         active ? 'text-amber-500' : 'text-slate-400 hover:text-slate-600 dark:hover:text-slate-200'
       }`}
@@ -31,7 +31,7 @@ export default function QuickList({ title, items, onAdd, isFavorite, onToggleFav
             <button
               type="button"
               onClick={() => onAdd(item)}
-              aria-label={`Προσθήκη ${item.name}${amountLabel(item) ? `, ${amountLabel(item)}` : ''}, ${item.calories} θερμίδες`}
+              aria-label={`Add ${item.name}${amountLabel(item) ? `, ${amountLabel(item)}` : ''}, ${item.calories} calories`}
               className="flex min-w-0 flex-1 items-center gap-3 rounded-lg px-2 py-2 text-left transition hover:bg-slate-100 dark:hover:bg-slate-800"
             >
               <span className="min-w-0 flex-1">

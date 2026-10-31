@@ -1,33 +1,12 @@
 import RAW_FOODS from '../data/foods'
 
-const GREEK_TO_LATIN = {
-  α: 'a', β: 'v', γ: 'g', δ: 'd', ε: 'e', ζ: 'z', η: 'i', θ: 'th', ι: 'i', κ: 'k', λ: 'l', μ: 'm',
-  ν: 'n', ξ: 'ks', ο: 'o', π: 'p', ρ: 'r', σ: 's', ς: 's', τ: 't', υ: 'i', φ: 'f', χ: 'h', ψ: 'ps', ω: 'o',
-}
-
-// Folds accents, case and common Greeklish spellings onto one form,
-// so "Κοτόπουλο", "κοτοπουλο" and "kotopoulo" all match each other.
+// Folds accents, case and doubled letters onto one form,
+// so "Crème brûlée", "creme brulee" and "CREME BRULE" all match each other.
 export function searchKey(text) {
   return text
     .normalize('NFD')
     .replace(/[̀-ͯ]/g, '')
     .toLowerCase()
-    .replace(/αυ/g, 'αβ')
-    .replace(/ευ/g, 'εβ')
-    .replace(/ου/g, 'u')
-    .replace(/μπ/g, 'b')
-    .replace(/ντ/g, 'd')
-    .replace(/γκ|γγ/g, 'g')
-    .replace(/[α-ω]/g, (c) => GREEK_TO_LATIN[c] ?? c)
-    .replace(/ch|x/g, 'h')
-    .replace(/ou/g, 'u')
-    .replace(/mp/g, 'b')
-    .replace(/nt/g, 'd')
-    .replace(/8/g, 'th')
-    .replace(/y/g, 'i')
-    .replace(/w/g, 'o')
-    .replace(/ei|oi/g, 'i')
-    .replace(/ai/g, 'e')
     .replace(/(.)\1+/g, '$1')
 }
 

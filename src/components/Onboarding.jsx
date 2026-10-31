@@ -43,19 +43,19 @@ export default function Onboarding({ initial, onSubmit, onCancel }) {
         className="w-full rounded-2xl border border-slate-200 bg-white p-6 shadow-sm sm:p-8 dark:border-slate-800 dark:bg-slate-900/60"
       >
         <h1 className="text-xl font-semibold tracking-tight">
-          {initial ? 'Επεξεργασία προφίλ' : 'Τα στοιχεία σου'}
+          {initial ? 'Edit profile' : 'Your details'}
         </h1>
         <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
-          Χρησιμοποιούνται για τον υπολογισμό του ημερήσιου στόχου θερμίδων.
+          Used to calculate your daily calorie goal.
         </p>
 
         <div className="mt-6 space-y-5">
           <div>
-            <span className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-300">Φύλο</span>
+            <span className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-300">Sex</span>
             <div className="grid grid-cols-2 gap-2">
               {[
-                ['male', 'Άνδρας'],
-                ['female', 'Γυναίκα'],
+                ['male', 'Male'],
+                ['female', 'Female'],
               ].map(([value, label]) => (
                 <button
                   key={value}
@@ -75,19 +75,19 @@ export default function Onboarding({ initial, onSubmit, onCancel }) {
           </div>
 
           <div className="grid grid-cols-3 gap-3">
-            <Field label="Ηλικία" unit="έτη">
+            <Field label="Age" unit="years">
               <input type="number" inputMode="numeric" className={inputClass} value={form.age} onChange={set('age')} placeholder="25" required min={RANGES.age[0]} max={RANGES.age[1]} />
             </Field>
-            <Field label="Βάρος" unit="kg">
+            <Field label="Weight" unit="kg">
               <input type="number" inputMode="decimal" step="0.1" className={inputClass} value={form.weight} onChange={set('weight')} placeholder="70" required min={RANGES.weight[0]} max={RANGES.weight[1]} />
             </Field>
-            <Field label="Ύψος" unit="cm">
+            <Field label="Height" unit="cm">
               <input type="number" inputMode="numeric" className={inputClass} value={form.height} onChange={set('height')} placeholder="175" required min={RANGES.height[0]} max={RANGES.height[1]} />
             </Field>
           </div>
 
           <fieldset>
-            <legend className="mb-1 text-sm font-medium text-slate-700 dark:text-slate-300">Επίπεδο δραστηριότητας</legend>
+            <legend className="mb-1 text-sm font-medium text-slate-700 dark:text-slate-300">Activity level</legend>
             <div className="space-y-2">
               {ACTIVITY_LEVELS.map((level) => (
                 <label
@@ -121,16 +121,16 @@ export default function Onboarding({ initial, onSubmit, onCancel }) {
           {valid ? (
             <div className="flex items-center justify-between gap-4">
               <div>
-                <div className="text-slate-500 dark:text-slate-400">Βασικός μεταβολισμός {Math.round(bmr)} kcal</div>
-                <div className="font-semibold">Ημερήσιος στόχος</div>
+                <div className="text-slate-500 dark:text-slate-400">BMR {Math.round(bmr)} kcal</div>
+                <div className="font-semibold">Daily goal</div>
               </div>
               <div className="text-2xl font-bold text-emerald-600 dark:text-emerald-400">
-                {Math.round(tdee).toLocaleString('el-GR')} <span className="text-sm font-medium">kcal</span>
+                {Math.round(tdee).toLocaleString('en-GB')} <span className="text-sm font-medium">kcal</span>
               </div>
             </div>
           ) : (
             <span className="text-slate-500 dark:text-slate-400">
-              Συμπλήρωσε τα στοιχεία σου για να δεις τον ημερήσιο στόχο.
+              Fill in your details to see your daily goal.
             </span>
           )}
         </div>
@@ -142,7 +142,7 @@ export default function Onboarding({ initial, onSubmit, onCancel }) {
               onClick={onCancel}
               className="rounded-lg border border-slate-300 px-4 py-2.5 text-sm font-medium hover:bg-slate-50 dark:border-slate-700 dark:hover:bg-slate-800"
             >
-              Ακύρωση
+              Cancel
             </button>
           )}
           <button
@@ -150,7 +150,7 @@ export default function Onboarding({ initial, onSubmit, onCancel }) {
             disabled={!valid}
             className="flex-1 rounded-lg bg-emerald-600 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-emerald-500 disabled:cursor-not-allowed disabled:opacity-40"
           >
-            {initial ? 'Αποθήκευση' : 'Συνέχεια'}
+            {initial ? 'Save' : 'Continue'}
           </button>
         </div>
       </form>

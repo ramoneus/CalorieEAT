@@ -29,12 +29,12 @@ export default function Header({ userName, dark, onToggleTheme, onEditProfile, o
         <button
           onClick={onSwitchUser}
           className="mr-1 max-w-32 truncate rounded-lg px-2 py-1.5 text-sm font-medium text-slate-600 transition hover:bg-slate-200 dark:text-slate-300 dark:hover:bg-slate-800"
-          aria-label={`Αλλαγή χρήστη (τώρα: ${userName})`}
-          title="Αλλαγή χρήστη"
+          aria-label={`Switch user (current: ${userName})`}
+          title="Switch user"
         >
           {userName}
         </button>
-        <button onClick={onEditProfile} className={iconBtn} aria-label="Επεξεργασία προφίλ" title="Επεξεργασία προφίλ">
+        <button onClick={onEditProfile} className={iconBtn} aria-label="Edit profile" title="Edit profile">
           <svg {...iconProps}>
             <circle cx="12" cy="8" r="4" />
             <path d="M4 21a8 8 0 0 1 16 0" />
@@ -43,8 +43,8 @@ export default function Header({ userName, dark, onToggleTheme, onEditProfile, o
         <button
           onClick={onToggleTheme}
           className={iconBtn}
-          aria-label={dark ? 'Φωτεινό θέμα' : 'Σκοτεινό θέμα'}
-          title={dark ? 'Φωτεινό θέμα' : 'Σκοτεινό θέμα'}
+          aria-label={dark ? 'Light theme' : 'Dark theme'}
+          title={dark ? 'Light theme' : 'Dark theme'}
         >
           {dark ? (
             <svg {...iconProps}>

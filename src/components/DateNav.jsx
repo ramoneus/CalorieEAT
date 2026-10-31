@@ -1,10 +1,10 @@
 import { useEffect, useRef, useState } from 'react'
 import { addDays, dateFromKey, formatDate, todayKey } from '../lib/dates'
 
-const WEEKDAYS = ['Δ', 'Τ', 'Τ', 'Π', 'Π', 'Σ', 'Κ']
+const WEEKDAYS = ['M', 'T', 'W', 'T', 'F', 'S', 'S']
 const STATUS = {
-  under: { dot: 'bg-emerald-600', label: 'εντός στόχου' },
-  over: { dot: 'bg-rose-500', label: 'πάνω από τον στόχο' },
+  under: { dot: 'bg-emerald-600', label: 'within goal' },
+  over: { dot: 'bg-rose-500', label: 'over goal' },
 }
 
 const iconBtn =
@@ -21,8 +21,8 @@ function Chevron({ dir }) {
 
 function dayLabel(date, today) {
   const dayMonth = formatDate(date, { day: 'numeric', month: 'long' })
-  if (date === today) return `Σήμερα, ${dayMonth}`
-  if (date === addDays(today, -1)) return `Χθες, ${dayMonth}`
+  if (date === today) return `Today, ${dayMonth}`
+  if (date === addDays(today, -1)) return `Yesterday, ${dayMonth}`
   return formatDate(date, { weekday: 'long', day: 'numeric', month: 'long' })
 }
 
@@ -41,13 +41,13 @@ function Calendar({ selected, today, statusFor, onSelect }) {
   return (
     <div className="w-72">
       <div className="mb-2 flex items-center justify-between">
-        <button type="button" className={iconBtn} onClick={() => shiftMonth(-1)} aria-label="Προηγούμενος μήνας">
+        <button type="button" className={iconBtn} onClick={() => shiftMonth(-1)} aria-label="Previous month">
           <Chevron dir="left" />
         </button>
         <span className="text-sm font-semibold capitalize">
-          {first.toLocaleDateString('el-GR', { month: 'long', year: 'numeric' })}
+          {first.toLocaleDateString('en-GB', { month: 'long', year: 'numeric' })}
         </span>
-        <button type="button" className={iconBtn} onClick={() => shiftMonth(1)} disabled={isCurrentMonth} aria-label="Επόμενος μήνας">
+        <button type="button" className={iconBtn} onClick={() => shiftMonth(1)} disabled={isCurrentMonth} aria-label="Next month">
           <Chevron dir="right" />
         </button>
       </div>
@@ -115,7 +115,7 @@ export default function DateNav({ date, today, statusFor, onChange }) {
 
   return (
     <div ref={ref} className="relative flex items-center gap-1">
-      <button type="button" className={iconBtn} onClick={() => onChange(addDays(date, -1))} aria-label="Προηγούμενη μέρα">
+      <button type="button" className={iconBtn} onClick={() => onChange(addDays(date, -1))} aria-label="Previous day">
         <Chevron dir="left" />
       </button>
       <button
@@ -131,7 +131,7 @@ export default function DateNav({ date, today, statusFor, onChange }) {
         </svg>
         <span className="first-letter:uppercase">{dayLabel(date, today)}</span>
       </button>
-      <button type="button" className={iconBtn} onClick={() => onChange(addDays(date, 1))} disabled={date >= today} aria-label="Επόμενη μέρα">
+      <button type="button" className={iconBtn} onClick={() => onChange(addDays(date, 1))} disabled={date >= today} aria-label="Next day">
         <Chevron dir="right" />
       </button>
       {date !== today && (
@@ -140,14 +140,14 @@ export default function DateNav({ date, today, statusFor, onChange }) {
           onClick={() => onChange(today)}
           className="ml-1 rounded-lg border border-slate-300 px-2.5 py-1 text-xs font-medium transition hover:bg-slate-100 dark:border-slate-700 dark:hover:bg-slate-800"
         >
-          Σήμερα
+          Today
         </button>
       )}
 
       {open && (
         <div
           role="dialog"
-          aria-label="Επιλογή ημέρας"
+          aria-label="Pick a day"
           className="absolute top-full right-0 z-20 mt-2 rounded-2xl border border-slate-200 bg-white p-3 shadow-lg sm:left-0 sm:right-auto dark:border-slate-800 dark:bg-slate-900"
         >
           <Calendar
