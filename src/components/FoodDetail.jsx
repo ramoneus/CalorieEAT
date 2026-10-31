@@ -1,22 +1,25 @@
 import { useState } from 'react'
 import Field, { BackButton, inputClass } from './Field'
 import { StarButton } from './QuickList'
+import { useUnits } from '../hooks/useUnits'
 import { nutrientsFor } from '../lib/foods'
 import { fmtNumber } from '../lib/meals'
 
-const GRAMS = 'g'
+// The "by weight" choice in the unit menu: grams or ounces, depending on the user's units.
+const BY_WEIGHT = 'weight'
 
 export default function FoodDetail({ food, initial, isFavorite, onToggleFavorite, onAdd, onBack, submitLabel = 'Add' }) {
-  // A saved portion that no longer exists in the food list falls back to grams.
+  const { imperial, toMass, fromMass, fmtMass } = useUnits()
+  // A saved portion that no longer exists in the food list falls back to weight.
   const initialPortion = initial?.portion && food.portions.some((p) => p.label === initial.portion) ? initial.portion : null
-  const [unit, setUnit] = useState(initial ? (initialPortion ?? GRAMS) : (food.portions[0]?.label ?? GRAMS))
+  const [unit, setUnit] = useState(initial ? (initialPortion ?? BY_WEIGHT) : (food.portions[0]?.label ?? BY_WEIGHT))
   const [amount, setAmount] = useState(
-    String(initial ? (initialPortion ? initial.qty : initial.grams) : food.portions.length ? 1 : 100),
+    String(initial ? (initialPortion ? initial.qty : toMass(initial.grams)) : food.portions.length ? 1 : toMass(100)),
   )
 
   const portion = food.portions.find((p) => p.label === unit)
   const n = Number(amount)
-  const grams = Math.round(portion ? portion.grams * n : n)
+  const grams = Math.round(portion ? portion.grams * n : fromMass(n))
   const valid = n > 0 && grams > 0 && grams <= 5000
   const item = {
     foodId: food.id,
@@ -29,8 +32,8 @@ export default function FoodDetail({ food, initial, isFavorite, onToggleFavorite
 
   function changeUnit(e) {
     const next = e.target.value
-    // Switching to grams keeps the same amount of food; switching to a portion starts at one.
-    setAmount(next === GRAMS ? String(valid ? grams : 100) : '1')
+    // Switching to weight keeps the same amount of food; switching to a portion starts at one.
+    setAmount(next === BY_WEIGHT ? String(toMass(valid ? grams : 100)) : '1')
     setUnit(next)
   }
 
@@ -70,17 +73,17 @@ export default function FoodDetail({ food, initial, isFavorite, onToggleFavorite
           <select className={inputClass} value={unit} onChange={changeUnit}>
             {food.portions.map((p) => (
               <option key={p.label} value={p.label}>
-                {p.label} ({fmtNumber(p.grams)} g)
+                {p.label} ({fmtMass(p.grams)})
               </option>
             ))}
-            <option value={GRAMS}>grams</option>
+            <option value={BY_WEIGHT}>{imperial ? 'ounces' : 'grams'}</option>
           </select>
         </Field>
       </div>
 
       <div className="mt-4 rounded-xl bg-slate-100 p-4 dark:bg-slate-800/60" aria-live="polite">
         <div className="flex items-baseline justify-between">
-          <span className="text-sm text-slate-500 dark:text-slate-400">{valid ? `${fmtNumber(grams)} g` : '—'}</span>
+          <span className="text-sm text-slate-500 dark:text-slate-400">{valid ? fmtMass(grams) : '—'}</span>
           <span className="text-2xl font-bold text-emerald-600 dark:text-emerald-400">
             {item.calories} <span className="text-sm font-medium">kcal</span>
           </span>

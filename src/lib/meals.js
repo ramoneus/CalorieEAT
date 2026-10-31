@@ -40,8 +40,9 @@ export function recentItems(meals, limit = 8) {
 
 export const fmtNumber = (n) => n.toLocaleString('en-GB', { maximumFractionDigits: 1 })
 
-export function amountLabel(item) {
+// fmtMass formats grams in the user's unit (see units.js).
+export function amountLabel(item, fmtMass = (g) => `${fmtNumber(g)} g`) {
   if (!item.grams) return null
-  if (!item.portion) return `${fmtNumber(item.grams)} g`
-  return `${item.qty === 1 ? '1' : `${fmtNumber(item.qty)} ×`} ${item.portion} · ${fmtNumber(item.grams)} g`
+  if (!item.portion) return fmtMass(item.grams)
+  return `${item.qty === 1 ? '1' : `${fmtNumber(item.qty)} ×`} ${item.portion} · ${fmtMass(item.grams)}`
 }

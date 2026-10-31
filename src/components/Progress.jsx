@@ -1,6 +1,7 @@
 import { useRef, useState } from 'react'
 import { BalanceChart, CaloriesChart, WeightChart } from './charts'
 import Field, { inputClass } from './Field'
+import { useUnits } from '../hooks/useUnits'
 import { daysBetween, lastDays, todayKey } from '../lib/dates'
 import { balanceSeries, caloriesByDay, goalFor, maintenanceFor, modeFor } from '../lib/history'
 import { fmtNumber } from '../lib/meals'
@@ -21,12 +22,13 @@ function Stat({ label, value, sub }) {
 }
 
 function WeightForm({ onLog }) {
+  const { imperial, weightUnit, fromWeight } = useUnits()
   const [date, setDate] = useState(todayKey)
   const [kg, setKg] = useState('')
 
   function handleSubmit(e) {
     e.preventDefault()
-    const value = Number(kg)
+    const value = fromWeight(Number(kg))
     if (value < 30 || value > 300) return
     onLog(date, Math.round(value * 10) / 10)
     setKg('')
@@ -35,8 +37,8 @@ function WeightForm({ onLog }) {
   return (
     <form onSubmit={handleSubmit} className="flex flex-wrap items-end gap-3">
       <div className="w-28">
-        <Field label="Weight" unit="kg">
-          <input type="number" inputMode="decimal" step="0.1" min={30} max={300} className={inputClass} value={kg} onChange={(e) => setKg(e.target.value)} placeholder="70,5" required />
+        <Field label="Weight" unit={weightUnit}>
+          <input type="number" inputMode="decimal" step="0.1" min={0} className={inputClass} value={kg} onChange={(e) => setKg(e.target.value)} placeholder={imperial ? '155.5' : '70.5'} required />
         </Field>
       </div>
       <div className="w-40">
@@ -100,6 +102,7 @@ function Backup({ onExport, onImport }) {
 }
 
 export default function Progress({ meals, goals, weights, onLogWeight, onDeleteWeight, onSelectDay, onExport, onImport }) {
+  const { weightUnit, toWeight, fmtWeight } = useUnits()
   const [range, setRange] = useState(7)
   const today = todayKey()
   const byDay = caloriesByDay(meals)
@@ -184,8 +187,8 @@ export default function Progress({ meals, goals, weights, onLogWeight, onDeleteW
               />
               <Stat
                 label="Estimated change"
-                value={`${balance > 0 ? '+' : balance < 0 ? '−' : ''}${fmtNumber(Math.abs(balance) / KCAL_PER_KG)}`}
-                sub="kg, rough estimate"
+                value={`${balance > 0 ? '+' : balance < 0 ? '−' : ''}${fmtNumber(toWeight(Math.abs(balance) / KCAL_PER_KG))}`}
+                sub={`${weightUnit}, rough estimate`}
               />
             </div>
             <BalanceChart days={series} onSelectDay={onSelectDay} />
@@ -202,15 +205,15 @@ export default function Progress({ meals, goals, weights, onLogWeight, onDeleteW
           <h2 className="text-lg font-semibold">Weight</h2>
           {latest && (
             <span className="text-sm text-slate-500 dark:text-slate-400">
-              Latest: <span className="font-semibold text-slate-900 dark:text-slate-100">{fmtNumber(latest.kg)} kg</span>
-              {change !== null && ` · ${change > 0 ? '+' : change < 0 ? '−' : ''}${fmtNumber(Math.abs(change))} kg in ${rangeDays} days`}
+              Latest: <span className="font-semibold text-slate-900 dark:text-slate-100">{fmtWeight(latest.kg)}</span>
+              {change !== null && ` · ${change > 0 ? '+' : change < 0 ? '−' : ''}${fmtNumber(toWeight(Math.abs(change)))} ${weightUnit} in ${rangeDays} days`}
             </span>
           )}
         </div>
         <WeightForm onLog={onLogWeight} />
         <div className="mt-5">
           {points.length > 0 ? (
-            <WeightChart days={days} points={points} />
+            <WeightChart days={days} entries={points} />
           ) : (
             <div className="rounded-xl border border-dashed border-slate-300 px-4 py-8 text-center text-sm text-slate-500 dark:border-slate-700 dark:text-slate-400">
               No weight entries in this period.

@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { useUnits } from '../hooks/useUnits'
 import { useWidth } from '../hooks/useWidth'
 import { formatDate } from '../lib/dates'
 import { fmtNumber } from '../lib/meals'
@@ -231,8 +232,10 @@ export function CaloriesChart({ days, onSelectDay }) {
   )
 }
 
-// points: [{ date, kg }] inside the range of `days`, oldest first.
-export function WeightChart({ days, points }) {
+// entries: [{ date, kg }] inside the range of `days`, oldest first; drawn in the user's weight unit.
+export function WeightChart({ days, entries }) {
+  const { weightUnit, toWeight } = useUnits()
+  const points = entries.map((p) => ({ date: p.date, value: toWeight(p.kg) }))
   const [ref, width] = useWidth()
   const [active, setActive] = useState(null)
 
@@ -240,13 +243,13 @@ export function WeightChart({ days, points }) {
   const plotW = Math.max(0, width - PAD.left - PAD.right)
   const plotH = HEIGHT - PAD.top - PAD.bottom
   const band = plotW / days.length
-  const kgs = points.map((p) => p.kg)
-  const lo = Math.floor(Math.min(...kgs) - 1)
-  const hi = Math.ceil(Math.max(...kgs) + 1)
+  const values = points.map((p) => p.value)
+  const lo = Math.floor(Math.min(...values) - 1)
+  const hi = Math.ceil(Math.max(...values) + 1)
   const ticks = [lo, (lo + hi) / 2, hi]
   const x = (p) => PAD.left + (index[p.date] + 0.5) * band
-  const y = (kg) => PAD.top + plotH - ((kg - lo) / (hi - lo)) * plotH
-  const line = points.map((p, i) => `${i ? 'L' : 'M'}${x(p)} ${y(p.kg)}`).join('')
+  const y = (v) => PAD.top + plotH - ((v - lo) / (hi - lo)) * plotH
+  const line = points.map((p, i) => `${i ? 'L' : 'M'}${x(p)} ${y(p.value)}`).join('')
   const a = active !== null ? points[active] : null
 
   // Crosshair: snap to the nearest weigh-in, so the pointer never has to land on a dot.
@@ -273,13 +276,13 @@ export function WeightChart({ days, points }) {
                 <circle
                   key={p.date}
                   cx={x(p)}
-                  cy={y(p.kg)}
+                  cy={y(p.value)}
                   r={active === i ? 5 : 4}
                   fill="#059669"
                   strokeWidth="2"
                   className="stroke-white dark:stroke-slate-900"
                   tabIndex={0}
-                  aria-label={`${shortDate(p.date)}: ${fmtNumber(p.kg)} kg`}
+                  aria-label={`${shortDate(p.date)}: ${fmtNumber(p.value)} ${weightUnit}`}
                   onFocus={() => setActive(i)}
                   onBlur={() => setActive(null)}
                   style={{ outline: 'none' }}
@@ -289,16 +292,16 @@ export function WeightChart({ days, points }) {
           </svg>
         )}
         {a && (
-          <Tooltip x={x(a)} y={y(a.kg)} width={width}>
-            <div className="text-sm font-semibold">{fmtNumber(a.kg)} kg</div>
+          <Tooltip x={x(a)} y={y(a.value)} width={width}>
+            <div className="text-sm font-semibold">{fmtNumber(a.value)} {weightUnit}</div>
             <div className="text-slate-500 dark:text-slate-400">{shortDate(a.date)}</div>
           </Tooltip>
         )}
       </div>
       <TableView
         caption="Weight entries"
-        head={['Day', 'Weight (kg)']}
-        rows={[...points].reverse().map((p) => [p.date, shortDate(p.date), fmtNumber(p.kg)])}
+        head={['Day', `Weight (${weightUnit})`]}
+        rows={[...points].reverse().map((p) => [p.date, shortDate(p.date), fmtNumber(p.value)])}
       />
     </div>
   )
@@ -308,6 +311,7 @@ const NICE_STEPS = [500, 1000, 2000, 5000, 10000, 20000, 50000, 100000]
 
 // days: [{ date, kcal, balance, mode }]: the running surplus (+) or deficit (−) against maintenance.
 export function BalanceChart({ days, onSelectDay }) {
+  const { weightUnit, toWeight } = useUnits()
   const [ref, width] = useWidth()
   const [active, setActive] = useState(null)
 
@@ -360,7 +364,7 @@ export function BalanceChart({ days, onSelectDay }) {
             <div className="text-slate-500 dark:text-slate-400">{shortDate(a.date)}</div>
             <div className="text-slate-500 dark:text-slate-400">
               ≈ {a.balance > 0 ? '+' : a.balance < 0 ? '−' : ''}
-              {fmtNumber(Math.abs(a.balance) / KCAL_PER_KG)} kg · {modeById(a.mode).label}
+              {fmtNumber(toWeight(Math.abs(a.balance) / KCAL_PER_KG))} {weightUnit} · {modeById(a.mode).label}
             </div>
           </Tooltip>
         )}

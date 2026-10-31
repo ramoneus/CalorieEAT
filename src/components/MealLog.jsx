@@ -1,6 +1,8 @@
+import { useUnits } from '../hooks/useUnits'
 import { MEAL_CATEGORIES, amountLabel, categoryOf, fmtNumber } from '../lib/meals'
 
 export default function MealLog({ title, meals, onEdit, onDelete }) {
+  const { fmtMass } = useUnits()
   const groups = MEAL_CATEGORIES.map((c) => ({ ...c, meals: meals.filter((m) => categoryOf(m) === c.id) })).filter(
     (g) => g.meals.length > 0,
   )
@@ -38,7 +40,7 @@ export default function MealLog({ title, meals, onEdit, onDelete }) {
                       <span className="min-w-0 flex-1">
                         <span className="block truncate font-medium">{meal.name}</span>
                         <span className="mt-0.5 flex flex-wrap gap-x-3 text-xs text-slate-500 dark:text-slate-400">
-                          {amountLabel(meal) && <span>{amountLabel(meal)}</span>}
+                          {amountLabel(meal, fmtMass) && <span>{amountLabel(meal, fmtMass)}</span>}
                           <span className="text-protein">P {fmtNumber(meal.protein)}g</span>
                           <span className="text-carbs">C {fmtNumber(meal.carbs)}g</span>
                           <span className="text-fat">F {fmtNumber(meal.fat)}g</span>

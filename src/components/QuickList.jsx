@@ -1,3 +1,4 @@
+import { useUnits } from '../hooks/useUnits'
 import { amountLabel } from '../lib/meals'
 
 export function StarButton({ active, onClick, name }) {
@@ -21,6 +22,7 @@ export function StarButton({ active, onClick, name }) {
 
 // One-tap list: tapping a row adds that exact entry again.
 export default function QuickList({ title, items, onAdd, isFavorite, onToggleFavorite }) {
+  const { fmtMass } = useUnits()
   if (items.length === 0) return null
   return (
     <section>
@@ -31,13 +33,13 @@ export default function QuickList({ title, items, onAdd, isFavorite, onToggleFav
             <button
               type="button"
               onClick={() => onAdd(item)}
-              aria-label={`Add ${item.name}${amountLabel(item) ? `, ${amountLabel(item)}` : ''}, ${item.calories} calories`}
+              aria-label={`Add ${item.name}${amountLabel(item, fmtMass) ? `, ${amountLabel(item, fmtMass)}` : ''}, ${item.calories} calories`}
               className="flex min-w-0 flex-1 items-center gap-3 rounded-lg px-2 py-2 text-left transition hover:bg-slate-100 dark:hover:bg-slate-800"
             >
               <span className="min-w-0 flex-1">
                 <span className="block truncate text-sm font-medium">{item.name}</span>
-                {amountLabel(item) && (
-                  <span className="block truncate text-xs text-slate-500 dark:text-slate-400">{amountLabel(item)}</span>
+                {amountLabel(item, fmtMass) && (
+                  <span className="block truncate text-xs text-slate-500 dark:text-slate-400">{amountLabel(item, fmtMass)}</span>
                 )}
               </span>
               <span className="text-sm font-semibold whitespace-nowrap">

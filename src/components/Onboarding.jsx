@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import Field, { inputClass } from './Field'
 import { ACTIVITY_LEVELS, GOAL_MODES, calculateBMR, calculateTDEE, goalForMode } from '../lib/nutrition'
+import { UNIT_SYSTEMS, cmToFeetInches, defaultUnits, feetInchesToCm, unitsFor } from '../lib/units'
 
 const RANGES = {
   age: [10, 100],
@@ -8,24 +9,56 @@ const RANGES = {
   height: [100, 250],
 }
 
+const round1 = (n) => Math.round(n * 10) / 10
+
+// Weight and height as the form shows them, in the given unit system (stored values are metric).
+// The exact metric values ride along until the user edits the field, so opening and saving a
+// profile in US units doesn't drift (180 cm → 5 ft 11 in → 180.3 cm).
+function measurementsFields(units, weightKg, heightCm) {
+  const u = unitsFor(units)
+  const { ft, in: inches } = heightCm ? cmToFeetInches(heightCm) : { ft: '', in: '' }
+  return {
+    weight: weightKg ? String(round1(u.toWeight(weightKg))) : '',
+    height: heightCm ? String(heightCm) : '',
+    ft: String(ft),
+    in: String(inches),
+    weightKg: weightKg || null,
+    heightCm: heightCm || null,
+  }
+}
+
+const EXACT_FIELD = { weight: 'weightKg', height: 'heightCm', ft: 'heightCm', in: 'heightCm' }
+
 export default function Onboarding({ initial, onSubmit, onCancel }) {
-  const [form, setForm] = useState({
-    sex: initial?.sex ?? 'male',
-    age: initial?.age ?? '',
-    weight: initial?.weight ?? '',
-    height: initial?.height ?? '',
-    activity: initial?.activity ?? 'light',
-    mode: initial?.mode ?? 'maintain',
+  const [form, setForm] = useState(() => {
+    const units = initial?.units ?? defaultUnits()
+    return {
+      units,
+      sex: initial?.sex ?? 'male',
+      age: initial?.age ?? '',
+      ...measurementsFields(units, initial?.weight, initial?.height),
+      activity: initial?.activity ?? 'light',
+      mode: initial?.mode ?? 'maintain',
+    }
   })
 
-  const set = (key) => (e) => setForm((f) => ({ ...f, [key]: e.target.value }))
+  const set = (key) => (e) =>
+    setForm((f) => ({ ...f, [key]: e.target.value, ...(EXACT_FIELD[key] && { [EXACT_FIELD[key]]: null }) }))
+  const u = unitsFor(form.units)
 
   const profile = {
+    units: form.units,
     sex: form.sex,
     age: Number(form.age),
-    weight: Number(form.weight),
-    height: Number(form.height),
+    weight: form.weightKg ?? round1(u.fromWeight(Number(form.weight))),
+    height: form.heightCm ?? round1(u.imperial ? feetInchesToCm(Number(form.ft), Number(form.in)) : Number(form.height)),
     activity: form.activity,
+  }
+
+  // Switching units converts whatever has been typed so far.
+  function changeUnits(units) {
+    if (units === form.units) return
+    setForm((f) => ({ ...f, units, ...measurementsFields(units, profile.weight, profile.height) }))
   }
   const valid = Object.entries(RANGES).every(([k, [min, max]]) => profile[k] >= min && profile[k] <= max)
   const bmr = valid ? calculateBMR(profile) : null
@@ -52,6 +85,28 @@ export default function Onboarding({ initial, onSubmit, onCancel }) {
         </p>
 
         <div className="mt-6 space-y-5">
+          <fieldset>
+            <legend className="mb-1 text-sm font-medium text-slate-700 dark:text-slate-300">Units</legend>
+            <div className="grid grid-cols-2 gap-2">
+              {UNIT_SYSTEMS.map((s) => (
+                <button
+                  key={s.id}
+                  type="button"
+                  onClick={() => changeUnits(s.id)}
+                  aria-pressed={form.units === s.id}
+                  className={`rounded-lg border px-3 py-2 text-sm font-medium transition ${
+                    form.units === s.id
+                      ? 'border-emerald-500 bg-emerald-50 text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-400'
+                      : 'border-slate-300 text-slate-600 hover:bg-slate-50 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800'
+                  }`}
+                >
+                  {s.label}
+                  <span className="block text-xs font-normal opacity-70">{s.hint}</span>
+                </button>
+              ))}
+            </div>
+          </fieldset>
+
           <div>
             <span className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-300">Sex</span>
             <div className="grid grid-cols-2 gap-2">
@@ -80,12 +135,26 @@ export default function Onboarding({ initial, onSubmit, onCancel }) {
             <Field label="Age" unit="years">
               <input type="number" inputMode="numeric" className={inputClass} value={form.age} onChange={set('age')} placeholder="25" required min={RANGES.age[0]} max={RANGES.age[1]} />
             </Field>
-            <Field label="Weight" unit="kg">
-              <input type="number" inputMode="decimal" step="0.1" className={inputClass} value={form.weight} onChange={set('weight')} placeholder="70" required min={RANGES.weight[0]} max={RANGES.weight[1]} />
+            <Field label="Weight" unit={u.weightUnit}>
+              <input type="number" inputMode="decimal" step="0.1" className={inputClass} value={form.weight} onChange={set('weight')} placeholder={u.imperial ? '155' : '70'} required min={0} />
             </Field>
-            <Field label="Height" unit="cm">
-              <input type="number" inputMode="numeric" className={inputClass} value={form.height} onChange={set('height')} placeholder="175" required min={RANGES.height[0]} max={RANGES.height[1]} />
-            </Field>
+            {u.imperial ? (
+              <div>
+                <span className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-300">Height</span>
+                <div className="grid grid-cols-2 gap-1.5">
+                  <input type="number" inputMode="numeric" className={inputClass} value={form.ft} onChange={set('ft')} placeholder="5" required min={3} max={8} aria-label="Height, feet" />
+                  <input type="number" inputMode="numeric" className={inputClass} value={form.in} onChange={set('in')} placeholder="9" min={0} max={11} aria-label="Height, inches" />
+                </div>
+                <div className="mt-0.5 grid grid-cols-2 gap-1.5 text-center text-xs text-slate-400" aria-hidden="true">
+                  <span>ft</span>
+                  <span>in</span>
+                </div>
+              </div>
+            ) : (
+              <Field label="Height" unit="cm">
+                <input type="number" inputMode="numeric" className={inputClass} value={form.height} onChange={set('height')} placeholder="175" required min={RANGES.height[0]} max={RANGES.height[1]} />
+              </Field>
+            )}
           </div>
 
           <fieldset>

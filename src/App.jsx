@@ -10,11 +10,13 @@ import Progress from './components/Progress'
 import UserPicker from './components/UserPicker'
 import { useLocalStorage } from './hooks/useLocalStorage'
 import { useTheme } from './hooks/useTheme'
+import { UnitsContext } from './hooks/useUnits'
 import { useUsers, userKey } from './hooks/useUsers'
 import { addDays, formatDate, todayKey } from './lib/dates'
 import { caloriesByDay, entryFor, goalFor, maintenanceFor, modeFor, withGoal, withWeight } from './lib/history'
 import { itemKey, recentItems, toTemplate } from './lib/meals'
 import { goalForMode, sumMacros } from './lib/nutrition'
+import { unitsFor } from './lib/units'
 
 const VIEWS = [
   ['day', 'Day'],
@@ -122,105 +124,107 @@ function Tracker({ user, onSwitchUser }) {
   }
 
   return (
-    <div className="mx-auto max-w-5xl px-4 py-6 sm:px-6 sm:py-10">
-      <Header
-        userName={user.name}
-        dark={dark}
-        onToggleTheme={toggleTheme}
-        onEditProfile={() => setEditing(true)}
-        onSwitchUser={onSwitchUser}
-      />
+    <UnitsContext value={unitsFor(profile.units)}>
+      <div className="mx-auto max-w-5xl px-4 py-6 sm:px-6 sm:py-10">
+        <Header
+          userName={user.name}
+          dark={dark}
+          onToggleTheme={toggleTheme}
+          onEditProfile={() => setEditing(true)}
+          onSwitchUser={onSwitchUser}
+        />
 
-      <nav className="mt-6 flex flex-wrap items-center justify-between gap-3">
-        <div className="flex gap-1 rounded-lg bg-slate-200/70 p-1 dark:bg-slate-800" role="tablist">
-          {VIEWS.map(([id, label]) => (
-            <button
-              key={id}
-              type="button"
-              role="tab"
-              aria-selected={view === id}
-              onClick={() => setView(id)}
-              className={`rounded-md px-4 py-1.5 text-sm font-medium transition ${
-                view === id
-                  ? 'bg-white text-slate-900 shadow-sm dark:bg-slate-950 dark:text-white'
-                  : 'text-slate-600 hover:text-slate-900 dark:text-slate-300 dark:hover:text-white'
-              }`}
-            >
-              {label}
-            </button>
-          ))}
-        </div>
-        {view === 'day' && <DateNav date={date} today={today} statusFor={statusFor} onChange={setSelected} />}
-      </nav>
-
-      {view === 'day' ? (
-        // On phones the add panel sits right under the summary; on desktop it is a sticky sidebar.
-        <main className="mt-6 grid gap-6 lg:grid-cols-[1fr_22rem] lg:grid-rows-[auto_1fr] lg:items-start">
-          <Dashboard
-            goal={goalFor(goals, date)}
-            totals={totals}
-            mode={modeFor(goals, date)}
-            maintenance={maintenanceFor(goals, date)}
-            // Only today's plan can be switched; past days keep the mode they were logged under.
-            onSetMode={date === today ? changeMode : undefined}
-          />
-          <div className="lg:sticky lg:top-6 lg:col-start-2 lg:row-span-2 lg:row-start-1">
-            <AddFood
-              recents={recentItems(meals)}
-              favorites={favorites}
-              dayMeals={daysMeals}
-              previousMeals={prevMeals}
-              previousLabel={date === today ? 'yesterday' : 'the previous day'}
-              onAdd={addMeal}
-              onAddMany={addMeals}
-              onToggleFavorite={toggleFavorite}
-            />
+        <nav className="mt-6 flex flex-wrap items-center justify-between gap-3">
+          <div className="flex gap-1 rounded-lg bg-slate-200/70 p-1 dark:bg-slate-800" role="tablist">
+            {VIEWS.map(([id, label]) => (
+              <button
+                key={id}
+                type="button"
+                role="tab"
+                aria-selected={view === id}
+                onClick={() => setView(id)}
+                className={`rounded-md px-4 py-1.5 text-sm font-medium transition ${
+                  view === id
+                    ? 'bg-white text-slate-900 shadow-sm dark:bg-slate-950 dark:text-white'
+                    : 'text-slate-600 hover:text-slate-900 dark:text-slate-300 dark:hover:text-white'
+                }`}
+              >
+                {label}
+              </button>
+            ))}
           </div>
-          <div className="lg:col-start-1 lg:row-start-2">
-            <MealLog
-              title={date === today ? 'Today' : formatDate(date, { weekday: 'long', day: 'numeric', month: 'long' })}
-              meals={daysMeals}
-              onEdit={(meal) => setEditingMeal(meal)}
-              onDelete={deleteMeal}
-            />
-          </div>
-          {editingMeal && (
-            <EditMeal
-              meal={editingMeal}
-              isFavorite={(item) => favorites.some((f) => itemKey(f) === itemKey(item))}
-              onToggleFavorite={toggleFavorite}
-              onSave={(changes) => {
-                updateMeal(editingMeal.id, changes)
-                setEditingMeal(null)
-              }}
-              onDelete={() => {
-                deleteMeal(editingMeal.id)
-                setEditingMeal(null)
-              }}
-              onClose={() => setEditingMeal(null)}
-            />
-          )}
-        </main>
-      ) : (
-        <main className="mt-6">
-          <Progress
-            meals={meals}
-            goals={goals}
-            weights={weights}
-            onLogWeight={(d, kg) => setWeights((w) => withWeight(w, d, kg))}
-            onDeleteWeight={(d) => setWeights((w) => w.filter((x) => x.date !== d))}
-            onSelectDay={(d) => {
-              setSelected(d)
-              setView('day')
-            }}
-            onExport={exportData}
-            onImport={importData}
-          />
-        </main>
-      )}
+          {view === 'day' && <DateNav date={date} today={today} statusFor={statusFor} onChange={setSelected} />}
+        </nav>
 
-      {deleted && <UndoToast key={deleted.id} name={deleted.name} onUndo={undoDelete} onDismiss={dismissDeleted} />}
-    </div>
+        {view === 'day' ? (
+          // On phones the add panel sits right under the summary; on desktop it is a sticky sidebar.
+          <main className="mt-6 grid gap-6 lg:grid-cols-[1fr_22rem] lg:grid-rows-[auto_1fr] lg:items-start">
+            <Dashboard
+              goal={goalFor(goals, date)}
+              totals={totals}
+              mode={modeFor(goals, date)}
+              maintenance={maintenanceFor(goals, date)}
+              // Only today's plan can be switched; past days keep the mode they were logged under.
+              onSetMode={date === today ? changeMode : undefined}
+            />
+            <div className="lg:sticky lg:top-6 lg:col-start-2 lg:row-span-2 lg:row-start-1">
+              <AddFood
+                recents={recentItems(meals)}
+                favorites={favorites}
+                dayMeals={daysMeals}
+                previousMeals={prevMeals}
+                previousLabel={date === today ? 'yesterday' : 'the previous day'}
+                onAdd={addMeal}
+                onAddMany={addMeals}
+                onToggleFavorite={toggleFavorite}
+              />
+            </div>
+            <div className="lg:col-start-1 lg:row-start-2">
+              <MealLog
+                title={date === today ? 'Today' : formatDate(date, { weekday: 'long', day: 'numeric', month: 'long' })}
+                meals={daysMeals}
+                onEdit={(meal) => setEditingMeal(meal)}
+                onDelete={deleteMeal}
+              />
+            </div>
+            {editingMeal && (
+              <EditMeal
+                meal={editingMeal}
+                isFavorite={(item) => favorites.some((f) => itemKey(f) === itemKey(item))}
+                onToggleFavorite={toggleFavorite}
+                onSave={(changes) => {
+                  updateMeal(editingMeal.id, changes)
+                  setEditingMeal(null)
+                }}
+                onDelete={() => {
+                  deleteMeal(editingMeal.id)
+                  setEditingMeal(null)
+                }}
+                onClose={() => setEditingMeal(null)}
+              />
+            )}
+          </main>
+        ) : (
+          <main className="mt-6">
+            <Progress
+              meals={meals}
+              goals={goals}
+              weights={weights}
+              onLogWeight={(d, kg) => setWeights((w) => withWeight(w, d, kg))}
+              onDeleteWeight={(d) => setWeights((w) => w.filter((x) => x.date !== d))}
+              onSelectDay={(d) => {
+                setSelected(d)
+                setView('day')
+              }}
+              onExport={exportData}
+              onImport={importData}
+            />
+          </main>
+        )}
+
+        {deleted && <UndoToast key={deleted.id} name={deleted.name} onUndo={undoDelete} onDismiss={dismissDeleted} />}
+      </div>
+    </UnitsContext>
   )
 }
 
