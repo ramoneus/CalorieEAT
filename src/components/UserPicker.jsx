@@ -19,7 +19,7 @@ export default function UserPicker({ users, onSelect, onAdd, onDelete }) {
           calor<span className="font-extrabold text-emerald-500">EAT</span>
         </h1>
         <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
-          {users.length ? 'Επίλεξε χρήστη για να συνεχίσεις.' : 'Δημιούργησε τον πρώτο χρήστη.'}
+          {users.length ? 'Choose a user to continue.' : 'Create the first user.'}
         </p>
 
         {users.length > 0 && (
@@ -38,10 +38,10 @@ export default function UserPicker({ users, onSelect, onAdd, onDelete }) {
                 </button>
                 <button
                   type="button"
-                  onClick={() => confirm(`Διαγραφή του χρήστη «${u.name}» και όλων των δεδομένων του;`) && onDelete(u.id)}
+                  onClick={() => confirm(`Delete user “${u.name}” and all of their data?`) && onDelete(u.id)}
                   className="rounded-lg px-3 text-sm text-slate-500 transition hover:bg-red-50 hover:text-red-600 dark:text-slate-400 dark:hover:bg-red-500/10 dark:hover:text-red-400"
-                  aria-label={`Διαγραφή χρήστη ${u.name}`}
-                  title="Διαγραφή"
+                  aria-label={`Delete user ${u.name}`}
+                  title="Delete"
                 >
                   ✕
                 </button>
@@ -55,16 +55,16 @@ export default function UserPicker({ users, onSelect, onAdd, onDelete }) {
             className={inputClass}
             value={name}
             onChange={(e) => setName(e.target.value)}
-            placeholder="Όνομα νέου χρήστη"
+            placeholder="New user name"
             maxLength={30}
-            aria-label="Όνομα νέου χρήστη"
+            aria-label="New user name"
           />
           <button
             type="submit"
             disabled={!valid}
             className="rounded-lg bg-emerald-600 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-emerald-500 disabled:cursor-not-allowed disabled:opacity-40"
           >
-            Προσθήκη
+            Add
           </button>
         </form>
       </div>

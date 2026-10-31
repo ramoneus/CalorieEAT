@@ -4,7 +4,7 @@ import Field, { BackButton, inputClass } from './Field'
 const FIELDS = ['name', 'calories', 'protein', 'carbs', 'fat']
 
 // Manual entry, for anything the food list doesn't have. Also edits manual entries.
-export default function MealForm({ initial = {}, onAdd, onBack, submitLabel = 'Προσθήκη' }) {
+export default function MealForm({ initial = {}, onAdd, onBack, submitLabel = 'Add' }) {
   const [form, setForm] = useState(() => Object.fromEntries(FIELDS.map((k) => [k, String(initial[k] ?? '')])))
   const set = (key) => (e) => setForm((f) => ({ ...f, [key]: e.target.value }))
 
@@ -26,22 +26,22 @@ export default function MealForm({ initial = {}, onAdd, onBack, submitLabel = '�
   return (
     <form onSubmit={handleSubmit}>
       {onBack && <BackButton onClick={onBack} />}
-      {onBack && <h3 className="mb-3 font-semibold">Χειροκίνητη καταχώριση</h3>}
+      {onBack && <h3 className="mb-3 font-semibold">Manual entry</h3>}
       <div className="space-y-3">
-        <Field label="Φαγητό">
-          <input type="text" className={inputClass} value={form.name} onChange={set('name')} placeholder="π.χ. Κοτόπουλο με ρύζι" required maxLength={80} />
+        <Field label="Food">
+          <input type="text" className={inputClass} value={form.name} onChange={set('name')} placeholder="e.g. Chicken with rice" required maxLength={80} />
         </Field>
-        <Field label="Θερμίδες" unit="kcal">
+        <Field label="Calories" unit="kcal">
           <input {...num} value={form.calories} onChange={set('calories')} placeholder="0" required />
         </Field>
         <div className="grid grid-cols-3 gap-3">
-          <Field label="Πρωτεΐνη" unit="g">
+          <Field label="Protein" unit="g">
             <input {...num} value={form.protein} onChange={set('protein')} placeholder="0" />
           </Field>
-          <Field label="Υδατ." unit="g">
+          <Field label="Carbs" unit="g">
             <input {...num} value={form.carbs} onChange={set('carbs')} placeholder="0" />
           </Field>
-          <Field label="Λιπαρά" unit="g">
+          <Field label="Fat" unit="g">
             <input {...num} value={form.fat} onChange={set('fat')} placeholder="0" />
           </Field>
         </div>

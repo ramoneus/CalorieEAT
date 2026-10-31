@@ -1,8 +1,8 @@
 export const MEAL_CATEGORIES = [
-  { id: 'breakfast', label: 'Πρωινό' },
-  { id: 'lunch', label: 'Μεσημεριανό' },
-  { id: 'dinner', label: 'Βραδινό' },
-  { id: 'snack', label: 'Σνακ' },
+  { id: 'breakfast', label: 'Breakfast' },
+  { id: 'lunch', label: 'Lunch' },
+  { id: 'dinner', label: 'Dinner' },
+  { id: 'snack', label: 'Snack' },
 ]
 
 // A sensible default for when the user opens the app; they can always switch.
@@ -38,7 +38,7 @@ export function recentItems(meals, limit = 8) {
   return out
 }
 
-export const fmtNumber = (n) => n.toLocaleString('el-GR', { maximumFractionDigits: 1 })
+export const fmtNumber = (n) => n.toLocaleString('en-GB', { maximumFractionDigits: 1 })
 
 export function amountLabel(item) {
   if (!item.grams) return null

@@ -17,4 +17,4 @@ export function addDays(key, n) {
 // The n days ending on (and including) endKey, oldest first.
 export const lastDays = (endKey, n) => Array.from({ length: n }, (_, i) => addDays(endKey, i - n + 1))
 
-export const formatDate = (key, options) => dateFromKey(key).toLocaleDateString('el-GR', options)
+export const formatDate = (key, options) => dateFromKey(key).toLocaleDateString('en-GB', options)

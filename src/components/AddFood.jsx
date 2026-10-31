@@ -35,7 +35,7 @@ export default function AddFood({
 
   function add(item) {
     onAdd({ ...item, category })
-    setNotice(`Προστέθηκε: ${item.name}`)
+    setNotice(`Added: ${item.name}`)
     setView('search')
     setQuery('')
   }
@@ -48,7 +48,7 @@ export default function AddFood({
 
   function copyPrevious() {
     onAddMany(toCopy.map((m) => ({ ...toTemplate(m), category })))
-    setNotice(`Προστέθηκαν ${toCopy.length} ${toCopy.length === 1 ? 'φαγητό' : 'φαγητά'}`)
+    setNotice(`Added ${toCopy.length} ${toCopy.length === 1 ? 'food' : 'foods'}`)
   }
 
   const openFood = (food) => setView({ food })
@@ -58,9 +58,9 @@ export default function AddFood({
   return (
     <section
       className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm dark:border-slate-800 dark:bg-slate-900/60"
-      aria-label="Προσθήκη φαγητού"
+      aria-label="Add food"
     >
-      <h2 className="mb-3 text-lg font-semibold">Προσθήκη φαγητού</h2>
+      <h2 className="mb-3 text-lg font-semibold">Add food</h2>
 
       <div className="mb-4">
         <CategoryPicker value={category} onChange={setCategory} />
@@ -88,14 +88,14 @@ export default function AddFood({
             onKeyDown={(e) => {
               if (e.key === 'Enter' && results[0]) openFood(results[0])
             }}
-            placeholder="Αναζήτηση, π.χ. ψωμί, γιαούρτι"
-            aria-label="Αναζήτηση φαγητού"
+            placeholder="Search, e.g. bread, yogurt"
+            aria-label="Search foods"
           />
 
           <div className="mt-3">
             {query.trim() ? (
               results.length > 0 ? (
-                <ul aria-label="Αποτελέσματα">
+                <ul aria-label="Results">
                   {results.map((food) => (
                     <li key={food.id}>
                       <button
@@ -118,9 +118,9 @@ export default function AddFood({
                 </ul>
               ) : (
                 <p className="px-2 py-4 text-sm text-slate-500 dark:text-slate-400">
-                  Δεν βρέθηκε «{query.trim()}».{' '}
+                  No results for “{query.trim()}”.{' '}
                   <button type="button" onClick={() => setView({ manual: true })} className={linkBtn}>
-                    Καταχώρισέ το με το χέρι
+                    Enter it manually
                   </button>
                 </p>
               )
@@ -134,7 +134,7 @@ export default function AddFood({
                   >
                     <span className="min-w-0 flex-1">
                       <span className="block text-sm font-medium">
-                        Ίδιο {categoryLabel.toLowerCase()} με {previousLabel}
+                        Same {categoryLabel.toLowerCase()} as {previousLabel}
                       </span>
                       <span className="block truncate text-xs text-slate-500 dark:text-slate-400">
                         {toCopy.map((m) => m.name).join(', ')}
@@ -152,14 +152,14 @@ export default function AddFood({
                   </button>
                 )}
                 <QuickList
-                  title="Αγαπημένα"
+                  title="Favorites"
                   items={favorites}
                   onAdd={add}
                   isFavorite={isFavorite}
                   onToggleFavorite={onToggleFavorite}
                 />
                 <QuickList
-                  title="Πρόσφατα"
+                  title="Recent"
                   items={recents.filter((r) => !isFavorite(r))}
                   onAdd={add}
                   isFavorite={isFavorite}
@@ -172,7 +172,7 @@ export default function AddFood({
           {!(query.trim() && results.length === 0) && (
             <div className="mt-4 border-t border-slate-200 pt-3 dark:border-slate-800">
               <button type="button" onClick={() => setView({ manual: true })} className={linkBtn}>
-                Χειροκίνητη καταχώριση
+                Manual entry
               </button>
             </div>
           )}

@@ -18,7 +18,7 @@ function migrateLegacy() {
       localStorage.setItem(userKey(id, k), localStorage.getItem(`calorie-tracker:${k}`))
       localStorage.removeItem(`calorie-tracker:${k}`)
     }
-    localStorage.setItem(USERS_KEY, JSON.stringify([{ id, name: 'Χρήστης' }]))
+    localStorage.setItem(USERS_KEY, JSON.stringify([{ id, name: 'User' }]))
     localStorage.setItem(CURRENT_KEY, JSON.stringify(id))
   } catch {
     // Storage blocked: nothing to migrate.

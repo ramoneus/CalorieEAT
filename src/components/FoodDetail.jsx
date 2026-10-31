@@ -6,7 +6,7 @@ import { fmtNumber } from '../lib/meals'
 
 const GRAMS = 'g'
 
-export default function FoodDetail({ food, initial, isFavorite, onToggleFavorite, onAdd, onBack, submitLabel = 'Προσθήκη' }) {
+export default function FoodDetail({ food, initial, isFavorite, onToggleFavorite, onAdd, onBack, submitLabel = 'Add' }) {
   // A saved portion that no longer exists in the food list falls back to grams.
   const initialPortion = initial?.portion && food.portions.some((p) => p.label === initial.portion) ? initial.portion : null
   const [unit, setUnit] = useState(initial ? (initialPortion ?? GRAMS) : (food.portions[0]?.label ?? GRAMS))
@@ -47,14 +47,14 @@ export default function FoodDetail({ food, initial, isFavorite, onToggleFavorite
         <div>
           <h3 className="font-semibold">{food.name}</h3>
           <p className="mt-0.5 text-xs text-slate-500 dark:text-slate-400">
-            Ανά 100 g: {food.kcal} kcal · Π {fmtNumber(food.protein)} g · Υ {fmtNumber(food.carbs)} g · Λ {fmtNumber(food.fat)} g
+            Per 100 g: {food.kcal} kcal · P {fmtNumber(food.protein)} g · C {fmtNumber(food.carbs)} g · F {fmtNumber(food.fat)} g
           </p>
         </div>
         <StarButton active={isFavorite(item)} onClick={() => onToggleFavorite(item)} name={food.name} />
       </div>
 
       <div className="mt-4 grid grid-cols-[6rem_1fr] gap-3">
-        <Field label="Ποσότητα">
+        <Field label="Amount">
           <input
             type="number"
             inputMode="decimal"
@@ -66,14 +66,14 @@ export default function FoodDetail({ food, initial, isFavorite, onToggleFavorite
             required
           />
         </Field>
-        <Field label="Μονάδα">
+        <Field label="Unit">
           <select className={inputClass} value={unit} onChange={changeUnit}>
             {food.portions.map((p) => (
               <option key={p.label} value={p.label}>
                 {p.label} ({fmtNumber(p.grams)} g)
               </option>
             ))}
-            <option value={GRAMS}>γραμμάρια</option>
+            <option value={GRAMS}>grams</option>
           </select>
         </Field>
       </div>
@@ -86,9 +86,9 @@ export default function FoodDetail({ food, initial, isFavorite, onToggleFavorite
           </span>
         </div>
         <div className="mt-1 flex gap-3 text-xs">
-          <span className="text-protein">Πρωτεΐνη {fmtNumber(item.protein)} g</span>
-          <span className="text-carbs">Υδατ. {fmtNumber(item.carbs)} g</span>
-          <span className="text-fat">Λιπαρά {fmtNumber(item.fat)} g</span>
+          <span className="text-protein">Protein {fmtNumber(item.protein)} g</span>
+          <span className="text-carbs">Carbs {fmtNumber(item.carbs)} g</span>
+          <span className="text-fat">Fat {fmtNumber(item.fat)} g</span>
         </div>
       </div>
 

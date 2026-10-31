@@ -6,7 +6,7 @@ import { fmtNumber } from '../lib/meals'
 const HEIGHT = 200
 const PAD = { top: 12, right: 12, bottom: 24, left: 44 }
 
-const fmtKcal = (n) => Math.round(n).toLocaleString('el-GR')
+const fmtKcal = (n) => Math.round(n).toLocaleString('en-GB')
 const shortDate = (date) => formatDate(date, { weekday: 'short', day: 'numeric', month: 'short' })
 
 // Rounded 4px data-end, square at the baseline.
@@ -70,7 +70,7 @@ function TableView({ caption, head, rows }) {
   return (
     <details className="mt-2 text-sm">
       <summary className="cursor-pointer text-xs text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-100">
-        Προβολή ως πίνακας
+        Show as table
       </summary>
       <div className="mt-2 max-h-64 overflow-y-auto">
         <table className="w-full text-left">
@@ -124,7 +124,7 @@ export function CaloriesChart({ days, onSelectDay }) {
     <div>
       <div ref={ref} className="relative" onPointerLeave={() => setActive(null)}>
         {width > 0 && (
-          <svg width={width} height={HEIGHT} role="img" aria-label="Θερμίδες ανά ημέρα σε σχέση με τον στόχο">
+          <svg width={width} height={HEIGHT} role="img" aria-label="Calories per day compared with the goal">
             <Frame width={width} ticks={ticks} y={y} format={fmtKcal} days={days} band={band}>
               {days.map((d, i) =>
                 d.kcal ? (
@@ -146,7 +146,7 @@ export function CaloriesChart({ days, onSelectDay }) {
                   fill="transparent"
                   tabIndex={0}
                   role="button"
-                  aria-label={`${shortDate(d.date)}: ${d.kcal ? `${fmtKcal(d.kcal)} kcal` : 'χωρίς καταγραφή'}. Άνοιγμα ημέρας`}
+                  aria-label={`${shortDate(d.date)}: ${d.kcal ? `${fmtKcal(d.kcal)} kcal` : 'nothing logged'}. Open day`}
                   className="cursor-pointer outline-none"
                   onPointerEnter={() => setActive(i)}
                   onFocus={() => setActive(i)}
@@ -160,10 +160,10 @@ export function CaloriesChart({ days, onSelectDay }) {
         )}
         {a && (
           <Tooltip x={PAD.left + (active + 0.5) * band} y={y(Math.max(a.kcal ?? 0, a.goal))} width={width}>
-            <div className="text-sm font-semibold">{a.kcal ? `${fmtKcal(a.kcal)} kcal` : 'Χωρίς καταγραφή'}</div>
+            <div className="text-sm font-semibold">{a.kcal ? `${fmtKcal(a.kcal)} kcal` : 'Nothing logged'}</div>
             <div className="text-slate-500 dark:text-slate-400">{shortDate(a.date)}</div>
             <div className="text-slate-500 dark:text-slate-400">
-              Στόχος {fmtKcal(a.goal)}
+              Goal {fmtKcal(a.goal)}
               {a.kcal ? ` · ${a.kcal > a.goal ? '+' : '−'}${fmtKcal(Math.abs(a.kcal - a.goal))}` : ''}
             </div>
           </Tooltip>
@@ -172,16 +172,16 @@ export function CaloriesChart({ days, onSelectDay }) {
       <div className="mt-1 flex gap-4 text-xs text-slate-500 dark:text-slate-400">
         <span className="flex items-center gap-1.5">
           <span className="h-2.5 w-2.5 rounded-sm bg-[#059669]" aria-hidden="true" />
-          Θερμίδες
+          Calories
         </span>
         <span className="flex items-center gap-1.5">
           <span className="h-0.5 w-3 bg-slate-500 dark:bg-slate-400" aria-hidden="true" />
-          Στόχος
+          Goal
         </span>
       </div>
       <TableView
-        caption="Θερμίδες ανά ημέρα"
-        head={['Ημέρα', 'Θερμίδες', 'Στόχος']}
+        caption="Calories per day"
+        head={['Day', 'Calories', 'Goal']}
         rows={[...days].reverse().map((d) => [d.date, shortDate(d.date), d.kcal ? fmtKcal(d.kcal) : '—', fmtKcal(d.goal)])}
       />
     </div>
@@ -220,7 +220,7 @@ export function WeightChart({ days, points }) {
     <div>
       <div ref={ref} className="relative" onPointerLeave={() => setActive(null)}>
         {width > 0 && (
-          <svg width={width} height={HEIGHT} role="img" aria-label="Βάρος ανά ημέρα" onPointerMove={onMove}>
+          <svg width={width} height={HEIGHT} role="img" aria-label="Weight per day" onPointerMove={onMove}>
             <Frame width={width} ticks={ticks} y={y} format={fmtNumber} days={days} band={band}>
               {a && (
                 <line x1={x(a)} x2={x(a)} y1={PAD.top} y2={PAD.top + plotH} className="stroke-slate-300 dark:stroke-slate-600" strokeWidth="1" />
@@ -253,8 +253,8 @@ export function WeightChart({ days, points }) {
         )}
       </div>
       <TableView
-        caption="Καταγραφές βάρους"
-        head={['Ημέρα', 'Βάρος (kg)']}
+        caption="Weight entries"
+        head={['Day', 'Weight (kg)']}
         rows={[...points].reverse().map((p) => [p.date, shortDate(p.date), fmtNumber(p.kg)])}
       />
     </div>
