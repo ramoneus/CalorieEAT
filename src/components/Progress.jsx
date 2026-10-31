@@ -1,11 +1,12 @@
 import { useRef, useState } from 'react'
-import { CaloriesChart, WeightChart } from './charts'
+import { BalanceChart, CaloriesChart, WeightChart } from './charts'
 import Field, { inputClass } from './Field'
-import { lastDays, todayKey } from '../lib/dates'
-import { caloriesByDay, goalFor } from '../lib/history'
+import { daysBetween, lastDays, todayKey } from '../lib/dates'
+import { balanceSeries, caloriesByDay, goalFor, maintenanceFor, modeFor } from '../lib/history'
 import { fmtNumber } from '../lib/meals'
+import { KCAL_PER_KG, modeById } from '../lib/nutrition'
 
-const RANGES = [7, 30, 90]
+const RANGES = [7, 30, 90, 'all']
 const card = 'rounded-2xl border border-slate-200 bg-white p-5 shadow-sm dark:border-slate-800 dark:bg-slate-900/60'
 const fmtKcal = (n) => Math.round(n).toLocaleString('en-GB')
 
@@ -102,7 +103,19 @@ export default function Progress({ meals, goals, weights, onLogWeight, onDeleteW
   const [range, setRange] = useState(7)
   const today = todayKey()
   const byDay = caloriesByDay(meals)
-  const days = lastDays(today, range).map((date) => ({ date, kcal: byDay[date] ?? null, goal: goalFor(goals, date) }))
+  const firstLogged = Object.keys(byDay).sort()[0]
+  // "All" runs from the first logged day (at least a week) up to today.
+  const rangeDays = range === 'all' ? Math.max(7, firstLogged ? daysBetween(firstLogged, today) + 1 : 0) : range
+  const days = lastDays(today, rangeDays).map((date) => ({
+    date,
+    kcal: byDay[date] ?? null,
+    goal: goalFor(goals, date),
+    maintenance: maintenanceFor(goals, date),
+    mode: modeFor(goals, date),
+  }))
+  const series = balanceSeries(meals, goals, today)
+  const balance = series.at(-1)?.balance ?? 0
+  const loggedTotal = series.filter((d) => d.kcal).length
   const logged = days.filter((d) => d.kcal)
   const avg = logged.length ? logged.reduce((s, d) => s + d.kcal, 0) / logged.length : null
   const diff = logged.length ? logged.reduce((s, d) => s + d.kcal - d.goal, 0) / logged.length : null
@@ -128,7 +141,7 @@ export default function Progress({ meals, goals, weights, onLogWeight, onDeleteW
                 : 'text-slate-600 hover:bg-slate-200 dark:text-slate-300 dark:hover:bg-slate-800'
             }`}
           >
-            {r} days
+            {r === 'all' ? 'All time' : `${r} days`}
           </button>
         ))}
       </div>
@@ -140,12 +153,48 @@ export default function Progress({ meals, goals, weights, onLogWeight, onDeleteW
           value={diff === null ? '—' : `${diff > 0 ? '+' : '−'}${fmtKcal(Math.abs(diff))}`}
           sub={diff === null ? null : diff > 0 ? 'kcal/day over' : 'kcal/day under'}
         />
-        <Stat label="Days within goal" value={`${within} / ${logged.length}`} sub={`${logged.length} of ${range} logged`} />
+        <Stat label="Days within goal" value={`${within} / ${logged.length}`} sub={`${logged.length} of ${rangeDays} logged`} />
       </div>
 
       <section className={card} aria-label="Calories">
         <h2 className="mb-3 text-lg font-semibold">Calories per day</h2>
         <CaloriesChart days={days} onSelectDay={onSelectDay} />
+      </section>
+
+      <section className={card} aria-label="Overall progress">
+        <div className="mb-1 flex flex-wrap items-baseline justify-between gap-2">
+          <h2 className="text-lg font-semibold">Overall progress</h2>
+          {series.length > 0 && (
+            <span className="text-sm text-slate-500 dark:text-slate-400">
+              {modeById(modeFor(goals, today)).label} now
+            </span>
+          )}
+        </div>
+        <p className="mb-4 text-sm text-slate-500 dark:text-slate-400">
+          Your running surplus or deficit against maintenance since you started logging. Days with nothing logged are not counted.
+        </p>
+        {series.length > 0 ? (
+          <>
+            <div className="mb-4 grid grid-cols-3 gap-3">
+              <Stat label="Days logged" value={loggedTotal} sub={`since ${series[0].date}`} />
+              <Stat
+                label="Total balance"
+                value={`${balance > 0 ? '+' : balance < 0 ? '−' : ''}${fmtKcal(Math.abs(balance))}`}
+                sub="kcal vs maintenance"
+              />
+              <Stat
+                label="Estimated change"
+                value={`${balance > 0 ? '+' : balance < 0 ? '−' : ''}${fmtNumber(Math.abs(balance) / KCAL_PER_KG)}`}
+                sub="kg, rough estimate"
+              />
+            </div>
+            <BalanceChart days={series} onSelectDay={onSelectDay} />
+          </>
+        ) : (
+          <div className="rounded-xl border border-dashed border-slate-300 px-4 py-8 text-center text-sm text-slate-500 dark:border-slate-700 dark:text-slate-400">
+            Log some meals to start tracking your overall progress.
+          </div>
+        )}
       </section>
 
       <section className={card} aria-label="Weight">
@@ -154,7 +203,7 @@ export default function Progress({ meals, goals, weights, onLogWeight, onDeleteW
           {latest && (
             <span className="text-sm text-slate-500 dark:text-slate-400">
               Latest: <span className="font-semibold text-slate-900 dark:text-slate-100">{fmtNumber(latest.kg)} kg</span>
-              {change !== null && ` · ${change > 0 ? '+' : change < 0 ? '−' : ''}${fmtNumber(Math.abs(change))} kg in ${range} days`}
+              {change !== null && ` · ${change > 0 ? '+' : change < 0 ? '−' : ''}${fmtNumber(Math.abs(change))} kg in ${rangeDays} days`}
             </span>
           )}
         </div>
