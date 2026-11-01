@@ -2,15 +2,17 @@ import { useEffect, useRef, useState } from 'react'
 import CategoryPicker from './CategoryPicker'
 import FoodDetail from './FoodDetail'
 import MealForm from './MealForm'
-import { FOOD_BY_ID } from '../lib/foods'
+import { FOOD_BY_ID, prepareFood } from '../lib/foods'
 import { categoryOf } from '../lib/meals'
 
 // Edits one logged entry in a modal: the meal it belongs to and its amount (or, for a
 // manual entry, its values). Uses <dialog> for focus trapping and Escape-to-close.
-export default function EditMeal({ meal, isFavorite, onToggleFavorite, onSave, onDelete, onClose }) {
+export default function EditMeal({ meal, products, isFavorite, onToggleFavorite, onSave, onDelete, onClose }) {
   const ref = useRef(null)
   const [category, setCategory] = useState(categoryOf(meal))
-  const food = meal.foodId ? FOOD_BY_ID[meal.foodId] : null
+  // Built-in food or a scanned product; without either (e.g. product data cleared) it edits as a manual entry.
+  const saved = products[meal.foodId]
+  const food = FOOD_BY_ID[meal.foodId] ?? (saved ? prepareFood(saved) : null)
 
   useEffect(() => {
     ref.current.showModal()

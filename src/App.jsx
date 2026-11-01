@@ -38,6 +38,12 @@ function Tracker({ user, onSwitchUser }) {
   const [favorites, setFavorites] = useLocalStorage(key('favorites'), [])
   const [savedGoals, setGoals] = useLocalStorage(key('goals'), [])
   const [weights, setWeights] = useLocalStorage(key('weights'), [])
+  // Scanned products are shared by everyone on this device: product facts aren't personal.
+  const [products, setProducts] = useLocalStorage('calorie-tracker:products', {})
+  const saveProduct = useCallback(
+    ({ complete: _complete, ...food }) => setProducts((all) => ({ ...all, [food.id]: food })),
+    [setProducts],
+  )
   const [dark, toggleTheme] = useTheme()
   const [editing, setEditing] = useState(false)
   const [view, setView] = useState('day')
@@ -106,7 +112,7 @@ function Tracker({ user, onSwitchUser }) {
   const statusFor = (d) => (byDay[d] ? (byDay[d] > goalFor(goals, d) ? 'over' : 'under') : null)
 
   function exportData() {
-    const data = { app: 'calorEAT', version: 1, exportedAt: new Date().toISOString(), profile, meals, favorites, goals, weights }
+    const data = { app: 'calorEAT', version: 1, exportedAt: new Date().toISOString(), profile, meals, favorites, goals, weights, products }
     const url = URL.createObjectURL(new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' }))
     const a = document.createElement('a')
     a.href = url
@@ -121,6 +127,7 @@ function Tracker({ user, onSwitchUser }) {
     setFavorites(Array.isArray(data.favorites) ? data.favorites : [])
     setGoals(Array.isArray(data.goals) ? data.goals : [])
     setWeights(Array.isArray(data.weights) ? data.weights : [])
+    if (data.products && typeof data.products === 'object') setProducts((all) => ({ ...all, ...data.products }))
   }
 
   return (
@@ -177,6 +184,8 @@ function Tracker({ user, onSwitchUser }) {
                 onAdd={addMeal}
                 onAddMany={addMeals}
                 onToggleFavorite={toggleFavorite}
+                products={products}
+                onSaveProduct={saveProduct}
               />
             </div>
             <div className="lg:col-start-1 lg:row-start-2">
@@ -190,6 +199,7 @@ function Tracker({ user, onSwitchUser }) {
             {editingMeal && (
               <EditMeal
                 meal={editingMeal}
+                products={products}
                 isFavorite={(item) => favorites.some((f) => itemKey(f) === itemKey(item))}
                 onToggleFavorite={toggleFavorite}
                 onSave={(changes) => {

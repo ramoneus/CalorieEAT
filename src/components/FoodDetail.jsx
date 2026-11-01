@@ -2,6 +2,7 @@ import { useState } from 'react'
 import Field, { BackButton, inputClass } from './Field'
 import { StarButton } from './QuickList'
 import { useUnits } from '../hooks/useUnits'
+import { offProductUrl } from '../lib/barcode'
 import { nutrientsFor } from '../lib/foods'
 import { fmtNumber } from '../lib/meals'
 
@@ -52,6 +53,15 @@ export default function FoodDetail({ food, initial, isFavorite, onToggleFavorite
           <p className="mt-0.5 text-xs text-slate-500 dark:text-slate-400">
             Per 100 g: {food.kcal} kcal · P {fmtNumber(food.protein)} g · C {fmtNumber(food.carbs)} g · F {fmtNumber(food.fat)} g
           </p>
+          {/* Required by the Open Food Facts licence (ODbL) wherever their data is shown. */}
+          {food.source === 'off' && (
+            <p className="mt-0.5 text-xs text-slate-400">
+              Barcode {food.code} · Data from{' '}
+              <a href={offProductUrl(food.code)} target="_blank" rel="noreferrer" className="underline underline-offset-2 hover:text-slate-600 dark:hover:text-slate-200">
+                Open Food Facts
+              </a>
+            </p>
+          )}
         </div>
         <StarButton active={isFavorite(item)} onClick={() => onToggleFavorite(item)} name={food.name} />
       </div>

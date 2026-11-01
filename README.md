@@ -19,6 +19,7 @@ Built with **React (Vite)** and **Tailwind CSS**.
 - **Backup:** download all your data as a file and restore it on any device.
 - **Dark mode:** follows your system preference on first visit, with a manual toggle that is remembered.
 - **Responsive:** works on phones and desktops.
+- **Barcode scanning:** scan a packaged product with the camera (or type its number) to fetch its calories and macros from Open Food Facts. Scanned products are remembered, so they show up in search and work offline afterwards.
 - **Metric or US units:** choose kg, cm and grams or lb, ft/in and ounces when setting up your profile (changeable later). Data is always stored in metric, so switching never loses precision.
 - **Installable and offline:** add it to your home screen like a normal app; after the first visit it opens without an internet connection.
 - **Persistent:** profile, meals and theme live in `localStorage` and survive a refresh.
@@ -80,9 +81,14 @@ npm run lint      # lint with oxlint
 | `calorie-tracker:goals`     | daily goal history (each goal and the day it started) |
 | `calorie-tracker:weights`   | weight log, one entry per day                 |
 | `calorie-tracker:theme`     | `light` or `dark`                             |
+| `calorie-tracker:products`  | scanned products, shared by all users on the device |
 
 Meals are stored with their local date, so the dashboard starts empty at midnight while earlier days stay in storage. Clearing your browser's site data resets the app.
+
+Scanning a barcode sends only the barcode number to Open Food Facts to look the product up; nothing else leaves the device.
 
 ## License
 
 [MIT](LICENSE)
+
+Product data from barcode scans comes from [Open Food Facts](https://world.openfoodfacts.org), available under the [Open Database License](https://opendatacommons.org/licenses/odbl/1-0/).

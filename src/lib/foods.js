@@ -10,24 +10,26 @@ export function searchKey(text) {
     .replace(/(.)\1+/g, '$1')
 }
 
-export const FOODS = RAW_FOODS.map(([id, name, kcal, protein, carbs, fat, portions, extra = '']) => ({
-  id,
-  name,
-  kcal,
-  protein,
-  carbs,
-  fat,
-  portions: portions.map(([label, grams]) => ({ label, grams })),
-  nameKey: searchKey(name),
-  key: searchKey(`${name} ${extra}`),
-}))
+// Adds the search keys to a food. `extra` holds words that should match but aren't shown
+// (synonyms, or a scanned product's original Greek name and barcode).
+export const prepareFood = (food) => ({
+  ...food,
+  nameKey: searchKey(food.name),
+  key: searchKey(`${food.name} ${food.extra ?? ''}`),
+})
+
+export const FOODS = RAW_FOODS.map(([id, name, kcal, protein, carbs, fat, portions, extra = '']) =>
+  prepareFood({ id, name, kcal, protein, carbs, fat, portions: portions.map(([label, grams]) => ({ label, grams })), extra }),
+)
 
 export const FOOD_BY_ID = Object.fromEntries(FOODS.map((f) => [f.id, f]))
 
-export function searchFoods(query, limit = 30) {
+// `extra` foods (scanned products) are searched alongside the built-in list.
+export function searchFoods(query, limit = 30, extra = []) {
   const tokens = query.split(/\s+/).map(searchKey).filter(Boolean)
   if (tokens.length === 0) return []
-  return FOODS.filter((food) => tokens.every((t) => food.key.includes(t)))
+  return [...FOODS, ...extra]
+    .filter((food) => tokens.every((t) => food.key.includes(t)))
     .map((food) => ({
       food,
       rank: food.nameKey.startsWith(tokens[0]) ? 0 : food.nameKey.includes(` ${tokens[0]}`) ? 1 : 2,
