@@ -1,7 +1,7 @@
 {
   "name": "calorEAT",
   "short_name": "calorEAT",
-  "description": "Calorie and macro tracker with Greek and everyday foods.",
+  "description": "Free calorie and macro tracker with 900+ Greek and everyday foods and barcode scanning. No account, works offline.",
   "lang": "en",
   "id": "./",
   "start_url": "./",

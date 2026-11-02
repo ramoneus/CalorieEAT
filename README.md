@@ -1,13 +1,16 @@
 # calorEAT
 
-A clean, minimal calorie and macro tracker. On first launch it asks for your details, works out your daily calorie budget with the **Mifflin-St Jeor** equation, and then lets you log meals against that goal. Everything is stored in your browser, so there is no account, no backend and no data leaves your device.
+A free calorie and macro tracker that runs in your browser. Search about 900 Greek and everyday foods or scan a product's barcode, log your meals, and see how you are doing against a daily goal that fits your body and your aim: losing, keeping or gaining weight.
+
+It needs no account and no server. Everything you enter is stored on your own device, works offline once installed, and can be backed up to a file at any time.
 
 Built with **React (Vite)** and **Tailwind CSS**.
 
 ## Features
 
-- **Onboarding / BMR calculator:** enter sex, age, weight, height and activity level. A live preview shows your BMR and TDEE before you save.
-- **Automatic daily goal:** TDEE (BMR × activity factor) is saved and used as your daily calorie target. You can edit your profile at any time and the goal is recalculated.
+- **Personal goal:** enter sex, age, weight, height and activity level; a live preview shows your BMR (Mifflin-St Jeor) and maintenance calories before you save.
+- **Cutting, maintaining or bulking:** your daily target is maintenance (BMR × activity factor) shifted by your aim, and you can switch it any day. Edit your profile at any time and the goal is recalculated.
+- **Several users on one device:** each person gets their own profile, meals and history.
 - **Dashboard:** a progress bar for calories consumed vs. goal, the calories remaining (or how far over you are), and the day's protein, carbs and fat in grams.
 - **Food search:** about 900 Greek and everyday foods, dishes and brands with values per 100 g and ready-made portions (slice, cup, medium, etc.) or grams. Search ignores case and accents.
 - **Meals:** entries are filed under breakfast, lunch, dinner or snack (picked from the time of day, changeable).
