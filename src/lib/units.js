@@ -37,6 +37,8 @@ export function unitsFor(system) {
     toWeight,
     fromWeight: (value) => (imperial ? value * KG_PER_LB : value),
     fmtWeight: (kg) => `${fmtNumber(toWeight(kg))} ${weightUnit}`,
+    // Weekly rate of weight change, e.g. "0.25 kg/week" or "1.5 lb/week".
+    fmtRate: (kg) => `${toWeight(kg).toLocaleString('en-GB', { maximumFractionDigits: 2 })} ${weightUnit}/week`,
     // Food amounts: grams ⇄ the user's unit.
     toMass: (g) => round1(toMass(g)),
     fromMass: (value) => (imperial ? value * G_PER_OZ : value),

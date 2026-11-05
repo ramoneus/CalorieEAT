@@ -169,7 +169,7 @@ export default function Progress({ meals, goals, weights, onLogWeight, onDeleteW
           <h2 className="text-lg font-semibold">Overall progress</h2>
           {series.length > 0 && (
             <span className="text-sm text-slate-500 dark:text-slate-400">
-              {modeById(modeFor(goals, today)).label} now
+              {modeById(modeFor(goals, today)).status} now
             </span>
           )}
         </div>

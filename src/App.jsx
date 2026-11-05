@@ -15,7 +15,7 @@ import { useUsers, userKey } from './hooks/useUsers'
 import { addDays, formatDate, todayKey } from './lib/dates'
 import { caloriesByDay, entryFor, goalFor, maintenanceFor, modeFor, withGoal, withWeight } from './lib/history'
 import { itemKey, recentItems, toTemplate } from './lib/meals'
-import { goalForMode, sumMacros } from './lib/nutrition'
+import { pickRate, planGoal, sumMacros } from './lib/nutrition'
 import { unitsFor } from './lib/units'
 
 const VIEWS = [
@@ -64,7 +64,7 @@ function Tracker({ user, onSwitchUser }) {
         onSubmit={(p) => {
           const entry = entryFor(goals, today)
           if (entry?.goal !== p.goal || modeFor(goals, today) !== p.mode || maintenanceFor(goals, today) !== p.maintenance) {
-            setGoals(withGoal(goals, today, p.goal, { mode: p.mode, maintenance: p.maintenance }))
+            setGoals(withGoal(goals, today, p.goal, { mode: p.mode, maintenance: p.maintenance, rate: p.rate }))
           }
           if (p.weight !== profile?.weight) setWeights((w) => withWeight(w, today, p.weight))
           setProfile(p)
@@ -77,10 +77,22 @@ function Tracker({ user, onSwitchUser }) {
   const date = selected > today ? today : selected
   // Profiles saved before modes existed: their goal was plain maintenance.
   const maintenance = profile.maintenance ?? profile.goal
+  // Switching mode on the dashboard reuses the pace from the profile (nearest option for that mode).
   function changeMode(id) {
-    const goal = goalForMode(maintenance, id)
-    setProfile({ ...profile, maintenance, mode: id, goal })
-    setGoals(withGoal(goals, today, goal, { mode: id, maintenance }))
+    const rate = id === 'maintain' ? profile.rate : pickRate(id, profile.units, profile.rate)
+    const { goal } = planGoal({ maintenance, mode: id, rate: id === 'maintain' ? 0 : rate, sex: profile.sex })
+    setProfile({ ...profile, maintenance, mode: id, rate, goal })
+    setGoals(withGoal(goals, today, goal, { mode: id, maintenance, rate: id === 'maintain' ? 0 : rate }))
+  }
+  // Today's plan, for the pace / target line on the dashboard.
+  const currentMode = profile.mode ?? 'maintain'
+  const currentRate = currentMode === 'maintain' ? 0 : pickRate(currentMode, profile.units, profile.rate)
+  const plan = {
+    mode: currentMode,
+    rate: currentRate,
+    limited: planGoal({ maintenance, mode: currentMode, rate: currentRate, sex: profile.sex }).limited,
+    current: weights.at(-1)?.kg ?? profile.weight,
+    target: profile.targetMode === currentMode ? profile.targetWeight : null,
   }
   const daysMeals = meals.filter((m) => m.date === date).sort((a, b) => a.createdAt - b.createdAt)
   const totals = sumMacros(daysMeals)
@@ -173,6 +185,8 @@ function Tracker({ user, onSwitchUser }) {
               maintenance={maintenanceFor(goals, date)}
               // Only today's plan can be switched; past days keep the mode they were logged under.
               onSetMode={date === today ? changeMode : undefined}
+              plan={date === today ? plan : null}
+              onEditPlan={() => setEditing(true)}
             />
             <div className="lg:sticky lg:top-6 lg:col-start-2 lg:row-span-2 lg:row-start-1">
               <AddFood

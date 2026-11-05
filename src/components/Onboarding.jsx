@@ -1,6 +1,20 @@
 import { useState } from 'react'
 import Field, { inputClass } from './Field'
-import { ACTIVITY_LEVELS, GOAL_MODES, calculateBMR, calculateTDEE, goalForMode } from '../lib/nutrition'
+import { addDays, formatDate, todayKey } from '../lib/dates'
+import { fmtNumber } from '../lib/meals'
+import {
+  ACTIVITY_LEVELS,
+  GOAL_MODES,
+  MIN_GOAL,
+  calculateBMR,
+  calculateTDEE,
+  dailyDelta,
+  daysToTarget,
+  modeById,
+  pickRate,
+  planGoal,
+  rateOptions,
+} from '../lib/nutrition'
 import { UNIT_SYSTEMS, cmToFeetInches, defaultUnits, feetInchesToCm, unitsFor } from '../lib/units'
 
 const RANGES = {
@@ -27,7 +41,9 @@ function measurementsFields(units, weightKg, heightCm) {
   }
 }
 
-const EXACT_FIELD = { weight: 'weightKg', height: 'heightCm', ft: 'heightCm', in: 'heightCm' }
+const targetField = (units, kg) => ({ target: kg ? String(round1(unitsFor(units).toWeight(kg))) : '', targetKg: kg || null })
+
+const EXACT_FIELD = { weight: 'weightKg', height: 'heightCm', ft: 'heightCm', in: 'heightCm', target: 'targetKg' }
 
 export default function Onboarding({ initial, onSubmit, onCancel }) {
   const [form, setForm] = useState(() => {
@@ -39,6 +55,8 @@ export default function Onboarding({ initial, onSubmit, onCancel }) {
       ...measurementsFields(units, initial?.weight, initial?.height),
       activity: initial?.activity ?? 'light',
       mode: initial?.mode ?? 'maintain',
+      rate: initial?.rate ?? null,
+      ...targetField(units, initial?.targetMode === initial?.mode ? initial?.targetWeight : null),
     }
   })
 
@@ -58,17 +76,42 @@ export default function Onboarding({ initial, onSubmit, onCancel }) {
   // Switching units converts whatever has been typed so far.
   function changeUnits(units) {
     if (units === form.units) return
-    setForm((f) => ({ ...f, units, ...measurementsFields(units, profile.weight, profile.height) }))
+    setForm((f) => ({ ...f, units, ...measurementsFields(units, profile.weight, profile.height), ...targetField(units, targetKg) }))
   }
-  const valid = Object.entries(RANGES).every(([k, [min, max]]) => profile[k] >= min && profile[k] <= max)
+
+  const mode = modeById(form.mode)
+  const changing = mode.sign !== 0
+  const rate = pickRate(form.mode, form.units, form.rate)
+  // Target weight is optional, and only means something while losing or gaining.
+  const targetKg = form.targetKg ?? (form.target ? round1(u.fromWeight(Number(form.target))) : null)
+  const measurementsValid = Object.entries(RANGES).every(([k, [min, max]]) => profile[k] >= min && profile[k] <= max)
+  let targetError = null
+  if (changing && targetKg !== null) {
+    if (targetKg < RANGES.weight[0] || targetKg > RANGES.weight[1]) targetError = 'Enter a realistic weight.'
+    else if (measurementsValid && mode.sign * (targetKg - profile.weight) <= 0)
+      targetError = `To ${mode.label.toLowerCase()} weight, the target should be ${mode.sign < 0 ? 'below' : 'above'} your current weight.`
+  }
+  const valid = measurementsValid && !targetError
+
   const bmr = valid ? calculateBMR(profile) : null
   const maintenance = valid ? Math.round(calculateTDEE(profile)) : null
-  const goal = valid ? goalForMode(maintenance, form.mode) : null
+  const { goal, limited } = valid ? planGoal({ maintenance, mode: form.mode, rate, sex: form.sex }) : {}
+  const etaDays = valid && changing && targetKg ? daysToTarget({ current: profile.weight, target: targetKg, maintenance, goal }) : null
 
   function handleSubmit(e) {
     e.preventDefault()
     if (!valid) return
-    onSubmit({ ...profile, bmr: Math.round(bmr), maintenance, mode: form.mode, goal })
+    onSubmit({
+      ...profile,
+      bmr: Math.round(bmr),
+      maintenance,
+      mode: form.mode,
+      // Remember the last pace chosen even while maintaining, so switching back restores it.
+      rate: changing ? rate : (form.rate ?? null),
+      targetWeight: changing ? targetKg : null,
+      targetMode: changing && targetKg ? form.mode : null,
+      goal,
+    })
   }
 
   return (
@@ -207,10 +250,66 @@ export default function Onboarding({ initial, onSubmit, onCancel }) {
                 </button>
               ))}
             </div>
-            <p className="mt-1.5 text-xs text-slate-500 dark:text-slate-400">
-              {GOAL_MODES.find((m) => m.id === form.mode).hint}
-            </p>
+            {!changing && (
+              <p className="mt-1.5 text-xs text-slate-500 dark:text-slate-400">Keep your weight · eat at maintenance</p>
+            )}
           </fieldset>
+
+          {changing && (
+            <>
+              <fieldset>
+                <legend className="mb-1 text-sm font-medium text-slate-700 dark:text-slate-300">
+                  How fast? <span className="font-normal text-slate-400">per week</span>
+                </legend>
+                <div className={`grid gap-2 ${mode.sign < 0 ? 'grid-cols-2 sm:grid-cols-4' : 'grid-cols-2'}`}>
+                  {rateOptions(form.mode, form.units).map((r) => (
+                    <button
+                      key={r}
+                      type="button"
+                      onClick={() => setForm((f) => ({ ...f, rate: r }))}
+                      aria-pressed={rate === r}
+                      className={`rounded-lg border px-2 py-2 text-sm font-medium transition ${
+                        rate === r
+                          ? 'border-emerald-500 bg-emerald-50 text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-400'
+                          : 'border-slate-300 text-slate-600 hover:bg-slate-50 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800'
+                      }`}
+                    >
+                      {u.fmtRate(r).replace('/week', '')}
+                      <span className="block text-xs font-normal opacity-70">
+                        {mode.sign < 0 ? '−' : '+'}
+                        {Math.abs(Math.round(dailyDelta(form.mode, r)))} kcal/day
+                      </span>
+                    </button>
+                  ))}
+                </div>
+                <p className="mt-1.5 text-xs text-slate-500 dark:text-slate-400">
+                  {mode.sign < 0
+                    ? 'Around 0.5–1% of your body weight a week is a sustainable pace.'
+                    : 'A slow surplus keeps most of the gain as muscle rather than fat.'}
+                </p>
+              </fieldset>
+
+              <div>
+                <Field label="Target weight (optional)" unit={u.weightUnit}>
+                  <input
+                    type="number"
+                    inputMode="decimal"
+                    step="0.1"
+                    min={0}
+                    className={inputClass}
+                    value={form.target}
+                    onChange={set('target')}
+                    placeholder={mode.sign < 0 ? (u.imperial ? '145' : '65') : u.imperial ? '165' : '75'}
+                    aria-invalid={!!targetError}
+                    aria-describedby="target-hint"
+                  />
+                </Field>
+                <p id="target-hint" className={`mt-1 text-xs ${targetError ? 'text-rose-500' : 'text-slate-500 dark:text-slate-400'}`}>
+                  {targetError ?? 'Shows an estimated date for reaching it.'}
+                </p>
+              </div>
+            </>
+          )}
         </div>
 
         <div className="mt-6 rounded-xl bg-slate-100 p-4 text-sm dark:bg-slate-800/60" aria-live="polite">
@@ -228,8 +327,21 @@ export default function Onboarding({ initial, onSubmit, onCancel }) {
             </div>
           ) : (
             <span className="text-slate-500 dark:text-slate-400">
-              Fill in your details to see your daily goal.
+              {measurementsValid ? 'Check your target weight.' : 'Fill in your details to see your daily goal.'}
             </span>
+          )}
+          {valid && limited && (
+            <p className="mt-2 text-xs text-amber-700 dark:text-amber-400">
+              {goal < MIN_GOAL[form.sex]
+                ? `Your maintenance is already below ${MIN_GOAL[form.sex].toLocaleString('en-GB')} kcal, the usual minimum without medical supervision, so the goal stays at maintenance. Ask a doctor or dietitian about losing weight safely.`
+                : `Held at ${goal.toLocaleString('en-GB')} kcal, the usual minimum for ${form.sex === 'male' ? 'men' : 'women'} without medical supervision, so you'll lose more slowly than ${u.fmtRate(rate)}.`}
+            </p>
+          )}
+          {etaDays !== null && (
+            <p className="mt-2 text-xs text-slate-600 dark:text-slate-300">
+              {fmtNumber(u.toWeight(Math.abs(targetKg - profile.weight)))} {u.weightUnit} to go · target around{' '}
+              <span className="font-semibold">{formatDate(addDays(todayKey(), etaDays), { day: 'numeric', month: 'long', year: 'numeric' })}</span>
+            </p>
           )}
         </div>
 
