@@ -8,6 +8,7 @@ import MealLog from './components/MealLog'
 import Onboarding from './components/Onboarding'
 import Progress from './components/Progress'
 import UserPicker from './components/UserPicker'
+import WaterCard from './components/WaterCard'
 import { useLocalStorage } from './hooks/useLocalStorage'
 import { useTheme } from './hooks/useTheme'
 import { UnitsContext } from './hooks/useUnits'
@@ -17,6 +18,7 @@ import { caloriesByDay, entryFor, goalFor, maintenanceFor, modeFor, withGoal, wi
 import { itemKey, recentItems, toTemplate } from './lib/meals'
 import { pickRate, planGoal, sumMacros } from './lib/nutrition'
 import { unitsFor } from './lib/units'
+import { waterSettings, withWater } from './lib/water'
 
 const VIEWS = [
   ['day', 'Day'],
@@ -38,6 +40,7 @@ function Tracker({ user, onSwitchUser }) {
   const [favorites, setFavorites] = useLocalStorage(key('favorites'), [])
   const [savedGoals, setGoals] = useLocalStorage(key('goals'), [])
   const [weights, setWeights] = useLocalStorage(key('weights'), [])
+  const [water, setWater] = useLocalStorage(key('water'), {})
   // Scanned products are shared by everyone on this device: product facts aren't personal.
   const [products, setProducts] = useLocalStorage('calorie-tracker:products', {})
   const saveProduct = useCallback(
@@ -94,6 +97,7 @@ function Tracker({ user, onSwitchUser }) {
     current: weights.at(-1)?.kg ?? profile.weight,
     target: profile.targetMode === currentMode ? profile.targetWeight : null,
   }
+  const waterPrefs = waterSettings(profile)
   const daysMeals = meals.filter((m) => m.date === date).sort((a, b) => a.createdAt - b.createdAt)
   const totals = sumMacros(daysMeals)
   const byDay = caloriesByDay(meals)
@@ -124,7 +128,7 @@ function Tracker({ user, onSwitchUser }) {
   const statusFor = (d) => (byDay[d] ? (byDay[d] > goalFor(goals, d) ? 'over' : 'under') : null)
 
   function exportData() {
-    const data = { app: 'calorEAT', version: 1, exportedAt: new Date().toISOString(), profile, meals, favorites, goals, weights, products }
+    const data = { app: 'calorEAT', version: 1, exportedAt: new Date().toISOString(), profile, meals, favorites, goals, weights, water, products }
     const url = URL.createObjectURL(new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' }))
     const a = document.createElement('a')
     a.href = url
@@ -139,6 +143,7 @@ function Tracker({ user, onSwitchUser }) {
     setFavorites(Array.isArray(data.favorites) ? data.favorites : [])
     setGoals(Array.isArray(data.goals) ? data.goals : [])
     setWeights(Array.isArray(data.weights) ? data.weights : [])
+    setWater(data.water && typeof data.water === 'object' && !Array.isArray(data.water) ? data.water : {})
     if (data.products && typeof data.products === 'object') setProducts((all) => ({ ...all, ...data.products }))
   }
 
@@ -178,16 +183,26 @@ function Tracker({ user, onSwitchUser }) {
         {view === 'day' ? (
           // On phones the add panel sits right under the summary; on desktop it is a sticky sidebar.
           <main className="mt-6 grid gap-6 lg:grid-cols-[1fr_22rem] lg:grid-rows-[auto_1fr] lg:items-start">
-            <Dashboard
-              goal={goalFor(goals, date)}
-              totals={totals}
-              mode={modeFor(goals, date)}
-              maintenance={maintenanceFor(goals, date)}
-              // Only today's plan can be switched; past days keep the mode they were logged under.
-              onSetMode={date === today ? changeMode : undefined}
-              plan={date === today ? plan : null}
-              onEditPlan={() => setEditing(true)}
-            />
+            <div className="space-y-4">
+              <Dashboard
+                goal={goalFor(goals, date)}
+                totals={totals}
+                mode={modeFor(goals, date)}
+                maintenance={maintenanceFor(goals, date)}
+                // Only today's plan can be switched; past days keep the mode they were logged under.
+                onSetMode={date === today ? changeMode : undefined}
+                plan={date === today ? plan : null}
+                onEditPlan={() => setEditing(true)}
+              />
+              {waterPrefs.enabled && (
+                <WaterCard
+                  glasses={water[date] ?? 0}
+                  goal={waterPrefs.goal}
+                  glassMl={waterPrefs.glassMl}
+                  onChange={(n) => setWater((w) => withWater(w, date, n))}
+                />
+              )}
+            </div>
             <div className="lg:sticky lg:top-6 lg:col-start-2 lg:row-span-2 lg:row-start-1">
               <AddFood
                 recents={recentItems(meals)}

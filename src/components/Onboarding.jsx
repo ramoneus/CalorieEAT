@@ -16,6 +16,7 @@ import {
   rateOptions,
 } from '../lib/nutrition'
 import { UNIT_SYSTEMS, cmToFeetInches, defaultUnits, feetInchesToCm, unitsFor } from '../lib/units'
+import { WATER_GOAL_RANGE, fmtVolume, glassOptions, pickGlass, waterSettings } from '../lib/water'
 
 const RANGES = {
   age: [10, 100],
@@ -41,7 +42,21 @@ function measurementsFields(units, weightKg, heightCm) {
   }
 }
 
-const targetField = (units, kg) => ({ target: kg ? String(round1(unitsFor(units).toWeight(kg))) : '', targetKg: kg || null })
+function StepButton({ label, disabled, onClick, children }) {
+  return (
+    <button
+      type="button"
+      aria-label={label}
+      disabled={disabled}
+      onClick={onClick}
+      className="h-9 w-9 rounded-lg border border-slate-300 text-lg font-medium transition hover:bg-slate-50 disabled:opacity-40 dark:border-slate-700 dark:hover:bg-slate-800"
+    >
+      {children}
+    </button>
+  )
+}
+
+const targetField =(units, kg) => ({ target: kg ? String(round1(unitsFor(units).toWeight(kg))) : '', targetKg: kg || null })
 
 const EXACT_FIELD = { weight: 'weightKg', height: 'heightCm', ft: 'heightCm', in: 'heightCm', target: 'targetKg' }
 
@@ -57,8 +72,10 @@ export default function Onboarding({ initial, onSubmit, onCancel }) {
       mode: initial?.mode ?? 'maintain',
       rate: initial?.rate ?? null,
       ...targetField(units, initial?.targetMode === initial?.mode ? initial?.targetWeight : null),
+      water: waterSettings({ ...initial, units }),
     }
   })
+  const setWater = (changes) => setForm((f) => ({ ...f, water: { ...f.water, ...changes } }))
 
   const set = (key) => (e) =>
     setForm((f) => ({ ...f, [key]: e.target.value, ...(EXACT_FIELD[key] && { [EXACT_FIELD[key]]: null }) }))
@@ -111,6 +128,7 @@ export default function Onboarding({ initial, onSubmit, onCancel }) {
       targetWeight: changing ? targetKg : null,
       targetMode: changing && targetKg ? form.mode : null,
       goal,
+      water: { ...form.water, glassMl: pickGlass(form.units, form.water.glassMl) },
     })
   }
 
@@ -344,6 +362,74 @@ export default function Onboarding({ initial, onSubmit, onCancel }) {
             </p>
           )}
         </div>
+
+        <fieldset className="mt-6 border-t border-slate-200 pt-5 dark:border-slate-800">
+          <div className="flex items-center justify-between gap-3">
+            <legend className="text-sm font-medium text-slate-700 dark:text-slate-300">
+              Water tracker
+              <span className="block text-xs font-normal text-slate-500 dark:text-slate-400">A glass counter on the Day screen</span>
+            </legend>
+            <button
+              type="button"
+              role="switch"
+              aria-checked={form.water.enabled}
+              aria-label="Show the water tracker"
+              onClick={() => setWater({ enabled: !form.water.enabled })}
+              className={`relative h-6 w-11 shrink-0 rounded-full transition ${form.water.enabled ? 'bg-emerald-600' : 'bg-slate-300 dark:bg-slate-700'}`}
+            >
+              <span
+                className={`absolute top-0.5 left-0.5 h-5 w-5 rounded-full bg-white shadow transition-transform ${form.water.enabled ? 'translate-x-5' : ''}`}
+              />
+            </button>
+          </div>
+
+          {form.water.enabled && (
+            <div className="mt-4 flex flex-wrap items-end gap-x-6 gap-y-4">
+              <div>
+                <span className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-300">Daily goal</span>
+                <div className="flex items-center gap-2">
+                  <StepButton label="Fewer glasses" disabled={form.water.goal <= WATER_GOAL_RANGE[0]} onClick={() => setWater({ goal: form.water.goal - 1 })}>
+                    −
+                  </StepButton>
+                  <span className="w-20 text-center text-sm tabular-nums">
+                    <span className="font-semibold">{form.water.goal}</span> glasses
+                  </span>
+                  <StepButton label="More glasses" disabled={form.water.goal >= WATER_GOAL_RANGE[1]} onClick={() => setWater({ goal: form.water.goal + 1 })}>
+                    +
+                  </StepButton>
+                </div>
+              </div>
+              <div>
+                <span className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-300">Glass size</span>
+                <div className="flex gap-2">
+                  {glassOptions(form.units).map((ml) => {
+                    const selected = pickGlass(form.units, form.water.glassMl) === ml
+                    return (
+                      <button
+                        key={ml}
+                        type="button"
+                        aria-pressed={selected}
+                        onClick={() => setWater({ glassMl: ml })}
+                        className={`rounded-lg border px-3 py-2 text-sm font-medium transition ${
+                          selected
+                            ? 'border-emerald-500 bg-emerald-50 text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-400'
+                            : 'border-slate-300 text-slate-600 hover:bg-slate-50 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800'
+                        }`}
+                      >
+                        {fmtVolume(ml, u.imperial)}
+                      </button>
+                    )
+                  })}
+                </div>
+              </div>
+              <p className="w-full text-xs text-slate-500 dark:text-slate-400">
+                {form.water.goal} × {fmtVolume(pickGlass(form.units, form.water.glassMl), u.imperial)} ={' '}
+                {fmtVolume(form.water.goal * pickGlass(form.units, form.water.glassMl), u.imperial)} a day. Coffee, tea and food count towards
+                hydration too, so treat this as a nudge, not a rule.
+              </p>
+            </div>
+          )}
+        </fieldset>
 
         <div className="mt-6 flex gap-3">
           {onCancel && (

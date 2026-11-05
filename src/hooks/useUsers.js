@@ -3,7 +3,7 @@ import { useLocalStorage } from './useLocalStorage'
 
 const USERS_KEY = 'calorie-tracker:users'
 const CURRENT_KEY = 'calorie-tracker:current-user'
-const DATA_KEYS = ['profile', 'meals', 'favorites', 'goals', 'weights']
+const DATA_KEYS = ['profile', 'meals', 'favorites', 'goals', 'weights', 'water']
 
 export const userKey = (id, name) => `calorie-tracker:u:${id}:${name}`
 
