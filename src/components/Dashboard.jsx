@@ -43,19 +43,9 @@ const STATES = {
 // From 90% of the goal the bar turns amber, past it red.
 const stateFor = (ratio) => (ratio > 1 ? 'over' : ratio >= 0.9 ? 'close' : 'ok')
 
-const ICONS = {
-  close: <path d="M12 8v5M12 16.5v.5M12 3l9.5 17h-19z" />,
-  over: <path d="M12 7v6M12 16.5v.5M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18z" />,
-}
-
 function StatusBadge({ state }) {
   return (
-    <span className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-semibold ${STATES[state].badge}`}>
-      {ICONS[state] && (
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-          {ICONS[state]}
-        </svg>
-      )}
+    <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold ${STATES[state].badge}`}>
       {STATES[state].label}
     </span>
   )
