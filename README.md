@@ -13,6 +13,7 @@
 </p>
 
 <p align="center">
+  <a href="https://github.com/ramoneus/CalorieEAT/actions/workflows/deploy.yml"><img alt="CI" src="https://github.com/ramoneus/CalorieEAT/actions/workflows/deploy.yml/badge.svg"></a>
   <img alt="React" src="https://img.shields.io/badge/React-19-61DAFB?logo=react&logoColor=white">
   <img alt="Vite" src="https://img.shields.io/badge/Vite-8-646CFF?logo=vite&logoColor=white">
   <img alt="Tailwind CSS" src="https://img.shields.io/badge/Tailwind_CSS-4-06B6D4?logo=tailwindcss&logoColor=white">
@@ -80,7 +81,8 @@ When your profile changes, only the goals from that day on change. Past days kee
 | Offline   | Web app manifest and a service worker                                     |
 | Barcodes  | Native `BarcodeDetector` API, with a `zxing-wasm` fallback                |
 | Charts    | Hand-written SVG, with no chart library                                   |
-| CI/CD     | GitHub Actions builds every push to `main` and deploys it to GitHub Pages |
+| Testing   | Vitest unit tests for all the calculation and data logic in `src/lib`     |
+| CI/CD     | GitHub Actions lints, tests and builds every push and pull request; `main` deploys to GitHub Pages only when every check passes |
 
 ## Getting started
 
@@ -103,6 +105,8 @@ Then open http://localhost:5173. On Windows you can also double-click `run.bat`.
 | `npm run build`   | Creates a production build in `dist/` |
 | `npm run preview` | Serves the production build locally  |
 | `npm run lint`    | Lints the code with oxlint           |
+| `npm test`        | Runs the unit tests once             |
+| `npm run test:watch` | Re-runs the tests on every change |
 
 ## Privacy
 
