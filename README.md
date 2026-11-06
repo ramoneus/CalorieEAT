@@ -1,63 +1,92 @@
-# calorEAT
+<h1 align="center">calorEAT</h1>
 
-A clean, minimal calorie and macro tracker. On first launch it asks for your details, works out your daily calorie budget with the and then lets you log meals against that goal. Everything is stored in your browser, so there is no account, no backend and no data leaves your device.
+<p align="center">
+  A fast, private calorie and macro tracker that runs entirely in your browser.
+</p>
 
-Built with **React (Vite)** and **Tailwind CSS**.
+<p align="center">
+  <a href="https://ramoneus.github.io/CalorieEAT/"><strong>Live demo</strong></a>
+  ·
+  <a href="#features">Features</a>
+  ·
+  <a href="#getting-started">Getting started</a>
+</p>
+
+<p align="center">
+  <img alt="React" src="https://img.shields.io/badge/React-19-61DAFB?logo=react&logoColor=white">
+  <img alt="Vite" src="https://img.shields.io/badge/Vite-8-646CFF?logo=vite&logoColor=white">
+  <img alt="Tailwind CSS" src="https://img.shields.io/badge/Tailwind_CSS-4-06B6D4?logo=tailwindcss&logoColor=white">
+  <img alt="PWA" src="https://img.shields.io/badge/PWA-offline_ready-5A0FC8">
+  <img alt="License: MIT" src="https://img.shields.io/badge/license-MIT-green">
+</p>
 
 <p align="center">
   <img src="docs/screenshots/desktop.png" alt="calorEAT dashboard on desktop, dark mode" width="62%">
   <img src="docs/screenshots/mobile.png" alt="calorEAT dashboard on mobile, dark mode" width="24%">
 </p>
 
+## Overview
+
+calorEAT works out a personal daily calorie goal from your body stats and activity level, then helps you log what you eat against it. You can find foods by searching or by scanning a barcode, and you can follow your progress over weeks.
+
+There is no account and no server. All data stays on your device, the app installs to your home screen, and it keeps working offline.
+
 ## Features
 
-- **Onboarding / BMR calculator:** enter sex, age, weight, height and activity level. A live preview shows your BMR and TDEE before you save.
-- **Automatic daily goal:** TDEE (BMR × activity factor) is saved and used as your daily calorie target. You can edit your profile at any time and the goal is recalculated.
-- **Dashboard:** a progress bar for calories consumed vs. goal, the calories remaining (or how far over you are), and the day's protein, carbs and fat in grams.
-- **Food search:** about 900 Greek and everyday foods, dishes and brands with values per 100 g and ready-made portions (slice, cup, medium, etc.) or grams. Search ignores case and accents.
-- **Meals:** entries are filed under breakfast, lunch, dinner or snack (picked from the time of day, changeable).
-- **Recents and favourites:** re-add something you have eaten before with one tap, or repeat a whole meal from the day before ("Same breakfast as yesterday").
-- **Edit and undo:** tap an entry to change its amount or meal; a deleted entry can be restored for a few seconds.
-- **Manual entry:** for anything not in the list, type the calories and macros yourself.
-- **History:** move between days or pick one from a calendar (days are marked within or over goal) and log meals you forgot on past days.
-- **Progress:** calories per day against the goal and weight over the last 7, 30 or 90 days, with daily averages. Changing your profile only affects the goal from that day on.
-- **Backup:** download all your data as a file and restore it on any device.
-- **Dark mode:** follows your system preference on first visit, with a manual toggle that is remembered.
-- **Responsive:** works on phones and desktops.
-- **Barcode scanning:** scan a packaged product with the camera (or type its number) to fetch its calories and macros from Open Food Facts. Scanned products are remembered, so they show up in search and work offline afterwards.
-- **Metric or US units:** choose kg, cm and grams or lb, ft/in and ounces when setting up your profile (changeable later). Data is always stored in metric, so switching never loses precision.
-- **Installable and offline:** add it to your home screen like a normal app; after the first visit it opens without an internet connection.
-- **Persistent:** profile, meals and theme live in `localStorage` and survive a refresh.
+**Personal goal**
+- Uses the Mifflin-St Jeor equation to estimate your BMR and maintenance calories (TDEE), with a live preview during setup.
+- Lets you choose to lose, maintain or gain weight at a weekly rate (for example 0.5 kg a week) and an optional target weight. The app estimates the date you'll reach it.
+- Will not set a goal for losing weight below a safe minimum (1,200 kcal for women, 1,500 kcal for men).
+
+**Logging food**
+- Search about 900 Greek and everyday foods, dishes and brands, with ready-made portions (slice, cup, medium) or grams. The search ignores case and accents.
+- Scan a barcode with the camera to get a packaged product's nutrition from Open Food Facts. Scanned products are saved and work offline afterwards.
+- Every entry goes under breakfast, lunch, dinner or snack. Recent foods and favourites can be added again with one tap, or you can repeat yesterday's meal.
+- You can edit any entry, undo a deletion, or type in calories and macros by hand.
+
+**Tracking progress**
+- The dashboard shows calories eaten against the goal, how many are left, and protein, carbs and fat with each one's share of calories.
+- A calendar lets you move through past days, with each day marked as within or over the goal.
+- Charts show daily calories and body weight over 7, 30 or 90 days, with averages.
+- A water tracker counts glasses towards a daily goal.
+
+**Everyday use**
+- Several local profiles can share one device.
+- Units can be metric or US customary (lb, ft/in, oz). Data is always stored in metric, so switching units loses no precision.
+- Light and dark themes, a responsive layout for phones and desktops, and accessible labels throughout.
+- You can back up all your data to a file and restore it on another device.
 
 ## How the goal is calculated
 
 ```
-BMR  = 10 × weight (kg) + 6.25 × height (cm) − 5 × age + 5     (men)
-BMR  = 10 × weight (kg) + 6.25 × height (cm) − 5 × age − 161   (women)
-TDEE = BMR × activity factor
+BMR          = 10 × weight (kg) + 6.25 × height (cm) − 5 × age + 5      (men)
+BMR          = 10 × weight (kg) + 6.25 × height (cm) − 5 × age − 161    (women)
+Maintenance  = BMR × activity factor   (1.2 · 1.375 · 1.55 · 1.725)
+Daily goal   = Maintenance ± (weekly rate × 7,700 kcal/kg) ÷ 7
 ```
 
-| Activity level | Factor |
-| -------------- | ------ |
-| Sedentary      | 1.2    |
-| Light          | 1.375  |
-| Moderate       | 1.55   |
-| Intense        | 1.725  |
+When your profile changes, only the goals from that day on change. Past days keep the goal they had, so your history stays accurate.
 
-These are estimates, not medical advice.
+> These figures are estimates for general guidance, not medical advice.
 
-## Use it online
+## Tech stack
 
-Open **https://ramoneus.github.io/CalorieEAT/** in any browser. Nothing to install.
+| Area      | Choice                                                                    |
+| --------- | ------------------------------------------------------------------------- |
+| UI        | React 19 with function components and hooks                               |
+| Styling   | Tailwind CSS 4 with a class-based dark mode                               |
+| Build     | Vite 8                                                                    |
+| Storage   | `localStorage`, with a separate namespace for each profile                |
+| Offline   | Web app manifest and a service worker                                     |
+| Barcodes  | Native `BarcodeDetector` API, with a `zxing-wasm` fallback                |
+| Charts    | Hand-written SVG, with no chart library                                   |
+| CI/CD     | GitHub Actions builds every push to `main` and deploys it to GitHub Pages |
 
-To add it to your home screen as an app:
+## Getting started
 
-- **Android / Chrome / Edge:** tap the **Install** button in the app header, or *Install app* in the browser menu.
-- **iPhone / iPad (Safari):** tap **Share** → **Add to Home Screen**.
+The app is live at **[ramoneus.github.io/CalorieEAT](https://ramoneus.github.io/CalorieEAT/)**. To install it on your phone, use **Install** in the app header (Chrome, Edge, Android) or **Share → Add to Home Screen** (Safari on iOS).
 
-## Run it locally
-
-Requires [Node.js](https://nodejs.org/) 20 or newer.
+To run it locally you need [Node.js](https://nodejs.org/) 20 or newer:
 
 ```bash
 git clone https://github.com/ramoneus/CalorieEAT.git
@@ -66,34 +95,21 @@ npm install
 npm run dev
 ```
 
-Then open the URL Vite prints (usually http://localhost:5173).
+Then open http://localhost:5173. On Windows you can also double-click `run.bat`.
 
-Other scripts:
+| Script            | What it does                         |
+| ----------------- | ------------------------------------ |
+| `npm run dev`     | Starts the dev server with hot reload |
+| `npm run build`   | Creates a production build in `dist/` |
+| `npm run preview` | Serves the production build locally  |
+| `npm run lint`    | Lints the code with oxlint           |
 
-```bash
-npm run build     # production build in dist/
-npm run preview   # serve the production build locally
-npm run lint      # lint with oxlint
-```
+## Privacy
 
-## Data storage
-
-| Key                         | Contents                                      |
-| --------------------------- | --------------------------------------------- |
-| `calorie-tracker:profile`   | sex, age, weight, height, activity, BMR, goal |
-| `calorie-tracker:meals`     | every logged meal, each tagged with its date  |
-| `calorie-tracker:favorites` | foods starred as favourites                   |
-| `calorie-tracker:goals`     | daily goal history (each goal and the day it started) |
-| `calorie-tracker:weights`   | weight log, one entry per day                 |
-| `calorie-tracker:theme`     | `light` or `dark`                             |
-| `calorie-tracker:products`  | scanned products, shared by all users on the device |
-
-Meals are stored with their local date, so the dashboard starts empty at midnight while earlier days stay in storage. Clearing your browser's site data resets the app.
-
-Scanning a barcode sends only the barcode number to Open Food Facts to look the product up; nothing else leaves the device.
+Everything you enter is stored only in your browser's `localStorage`. The one network request is a barcode lookup, and it sends Open Food Facts only the barcode number. Clearing the site's data in your browser resets the app.
 
 ## License
 
-[MIT](LICENSE)
+Released under the [MIT License](LICENSE).
 
-Product data from barcode scans comes from [Open Food Facts](https://world.openfoodfacts.org), available under the [Open Database License](https://opendatacommons.org/licenses/odbl/1-0/).
+Product data from barcode scans comes from [Open Food Facts](https://world.openfoodfacts.org), under the [Open Database License](https://opendatacommons.org/licenses/odbl/1-0/).
