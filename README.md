@@ -4,6 +4,11 @@ A clean, minimal calorie and macro tracker. On first launch it asks for your det
 
 Built with **React (Vite)** and **Tailwind CSS**.
 
+<p align="center">
+  <img src="docs/screenshots/desktop.png" alt="calorEAT dashboard on desktop, dark mode" width="62%">
+  <img src="docs/screenshots/mobile.png" alt="calorEAT dashboard on mobile, dark mode" width="24%">
+</p>
+
 ## Features
 
 - **Onboarding / BMR calculator:** enter sex, age, weight, height and activity level. A live preview shows your BMR and TDEE before you save.
