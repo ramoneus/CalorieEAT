@@ -36,7 +36,7 @@ There is no account and no server. All data stays on your device, the app instal
 
 **Personal goal**
 - Uses the Mifflin-St Jeor equation to estimate your BMR and maintenance calories (TDEE), with a live preview during setup.
-- Lets you choose to lose, maintain or gain weight at a weekly rate (for example 0.5 kg a week) and an optional target weight. The app estimates the date you'll reach it.
+- Lets you choose to lose, maintain or gain weight at a weekly rate and an optional target weight. The app estimates the date you'll reach it.
 - Will not set a goal for losing weight below a safe minimum (1,200 kcal for women, 1,500 kcal for men).
 
 **Logging food**
